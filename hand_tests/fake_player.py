@@ -68,6 +68,10 @@ class FakePlayer(gobject.GObject):
 	def state(self):
 		return self._state
 
+	@property
+	def background(self):
+		return "night_temple_background"
+
 	def _state_change(self, widget, state):
 		self.emit("state_change", state)
 		self._state = state
