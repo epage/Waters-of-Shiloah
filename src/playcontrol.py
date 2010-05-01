@@ -2,6 +2,8 @@ import logging
 
 import gtk
 
+import gtk_toolbox
+import hildonize
 import util.misc as misc_utils
 
 
@@ -11,6 +13,8 @@ _moduleLogger = logging.getLogger(__name__)
 class PlayControl(object):
 
 	def __init__(self, player, store):
+		self._isPortrait = True
+
 		self._store = store
 
 		self._player = player
@@ -49,9 +53,54 @@ class PlayControl(object):
 		self._controls.pack_start(self._play)
 		self._controls.pack_start(self._next)
 
+		self._layout = gtk.VBox()
+		self._layout.pack_start(self._controls)
+
 	@property
 	def toplevel(self):
-		return self._controls
+		return self._layout
+
+	def set_orientation(self, orientation):
+		if orientation == gtk.ORIENTATION_VERTICAL:
+			if self._isPortrait:
+				return
+			self._isPortrait = True
+
+			self._controls.remove(self._back)
+			self._controls.remove(self._stop)
+			self._controls.remove(self._pause)
+			self._controls.remove(self._play)
+			self._controls.remove(self._next)
+			self._layout.remove(self._controls)
+
+			self._controls = gtk.HBox()
+			self._controls.pack_start(self._back)
+			self._controls.pack_start(self._stop)
+			self._controls.pack_start(self._pause)
+			self._controls.pack_start(self._play)
+			self._controls.pack_start(self._next)
+			self._layout.pack_start(self._controls)
+		elif orientation == gtk.ORIENTATION_HORIZONTAL:
+			if not self._isPortrait:
+				return
+			self._isPortrait = False
+
+			self._controls.remove(self._back)
+			self._controls.remove(self._stop)
+			self._controls.remove(self._pause)
+			self._controls.remove(self._play)
+			self._controls.remove(self._next)
+			self._layout.remove(self._controls)
+
+			self._controls = gtk.VBox()
+			self._controls.pack_start(self._back)
+			self._controls.pack_start(self._stop)
+			self._controls.pack_start(self._pause)
+			self._controls.pack_start(self._play)
+			self._controls.pack_start(self._next)
+			self._layout.pack_start(self._controls)
+		else:
+			raise NotImplementedError(orientation)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_state_change(self, player, newState):
@@ -85,6 +134,9 @@ class PlayControl(object):
 	def _on_back_clicked(self, *args):
 		self._player.back()
 
+		parent = gtk_toolbox.find_parent_window(self._layout)
+		hildonize.show_information_banner(parent, self._player.title)
+
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_stop_clicked(self, *args):
 		self._pause.hide()
@@ -106,3 +158,6 @@ class PlayControl(object):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_next_clicked(self, *args):
 		self._player.next()
+
+		parent = gtk_toolbox.find_parent_window(self._layout)
+		hildonize.show_information_banner(parent, self._player.title)
