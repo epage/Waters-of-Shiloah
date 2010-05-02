@@ -23,6 +23,10 @@ import constants
 import hildonize
 import gtk_toolbox
 
+import imagestore
+import player
+import windows
+
 
 _moduleLogger = logging.getLogger(__name__)
 PROFILE_STARTUP = False
@@ -113,6 +117,12 @@ class MormonChannelProgram(hildonize.get_app_class()):
 		self._window.connect("window-state-event", self._on_window_state_change)
 
 		self._window.show_all()
+
+		self._player = player.Player()
+		self._store = imagestore.ImageStore("../data", "../data")
+		self._windowStack = [windows.SourceSelector(self._player, self._store)]
+		vbox.pack_start(self._windowStack[0].toplevel, True, True)
+
 		self._load_settings()
 
 	def _save_settings(self):

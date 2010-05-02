@@ -21,27 +21,27 @@ class PlayControl(object):
 		self._player.connect("state-change", self._on_player_state_change)
 		self._player.connect("navigate-change", self._on_player_nav_change)
 
-		img = store.get_image_from_store("prev.png")
+		img = store.get_image_from_store(store.STORE_LOOKUP["prev"])
 		self._back = gtk.Button()
 		self._back.set_image(img)
 		self._back.connect("clicked", self._on_back_clicked)
 
-		img = store.get_image_from_store("stop.png")
+		img = store.get_image_from_store(store.STORE_LOOKUP["stop"])
 		self._stop = gtk.Button()
 		self._stop.set_image(img)
 		self._stop.connect("clicked", self._on_stop_clicked)
 
-		img = store.get_image_from_store("pause.png")
+		img = store.get_image_from_store(store.STORE_LOOKUP["pause"])
 		self._pause = gtk.Button()
 		self._pause.set_image(img)
 		self._pause.connect("clicked", self._on_pause_clicked)
 
-		img = store.get_image_from_store("play.png")
+		img = store.get_image_from_store(store.STORE_LOOKUP["play"])
 		self._play = gtk.Button()
 		self._play.set_image(img)
 		self._play.connect("clicked", self._on_play_clicked)
 
-		img = store.get_image_from_store("next.png")
+		img = store.get_image_from_store(store.STORE_LOOKUP["next"])
 		self._next = gtk.Button()
 		self._next.set_image(img)
 		self._next.connect("clicked", self._on_next_clicked)

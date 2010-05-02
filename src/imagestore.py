@@ -12,12 +12,14 @@ class ImageStore(object):
 		"pause": "pause.png",
 		"play": "play.png",
 		"stop": "stop.png",
+
 		"generic_background": "radiobackground_01.png",
 		"night_temple_background": "radiobackground_02.png",
 		"day_temple_background": "radiobackground_03.png",
 		"presidency_background": "radiobackground_04.png",
 		"scriptures_background": "radiobackground_05.png",
-		"conference": "conference.png",
+
+		"conferences": "conference.png",
 		"magazines": "magazines.png",
 		"more": "more.png",
 		"mormonmessages": "mormonmessages.png",
