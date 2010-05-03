@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+@todo Reverse order option.  Toggle between playing ascending/descending chronological order
+@todo Track recent
+"""
+
 from __future__ import with_statement
 
 import gc
@@ -37,6 +42,8 @@ class MormonChannelProgram(hildonize.get_app_class()):
 	def __init__(self):
 		super(MormonChannelProgram, self).__init__()
 		self._clipboard = gtk.clipboard_get()
+		self._player = player.Player()
+		self._store = imagestore.ImageStore("../data", "../data")
 
 		self._window_in_fullscreen = False #The window isn't in full screen mode initially.
 
@@ -88,6 +95,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 		self._window = hildonize.hildonize_window(self, self._window)
 		hildonize.set_application_title(self._window, "%s" % constants.__pretty_app_name__)
+		self._window.set_icon(self._store.get_pixbuf_from_store(self._store.STORE_LOOKUP["icon"]))
 		menuBar = hildonize.hildonize_menu(
 			self._window,
 			menuBar,
@@ -118,8 +126,6 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 		self._window.show_all()
 
-		self._player = player.Player()
-		self._store = imagestore.ImageStore("../data", "../data")
 		self._windowStack = [windows.SourceSelector(self._player, self._store)]
 		vbox.pack_start(self._windowStack[0].toplevel, True, True)
 
