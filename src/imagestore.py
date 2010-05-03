@@ -13,11 +13,10 @@ class ImageStore(object):
 		"play": "play.png",
 		"stop": "stop.png",
 
-		"generic_background": "radiobackground_01.png",
-		"night_temple_background": "radiobackground_02.png",
-		"day_temple_background": "radiobackground_03.png",
-		"presidency_background": "radiobackground_04.png",
-		"scriptures_background": "radiobackground_05.png",
+		"radio_header": "radio_header.png",
+		"conference_background": "conference_bg.png",
+		"magazine_background": "magazine_bg.png",
+		"scriptures_background": "scripture_bg.png",
 
 		"conferences": "conference.png",
 		"magazines": "magazines.png",
@@ -42,3 +41,7 @@ class ImageStore(object):
 		image = gtk.Image()
 		image.set_from_file(path)
 		return image
+
+	def get_pixbuf_from_store(self, image):
+		path = os.path.join(self._storePath, image)
+		return gtk.gdk.pixbuf_new_from_file(path)

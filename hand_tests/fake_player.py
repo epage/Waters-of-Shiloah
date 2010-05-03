@@ -70,7 +70,7 @@ class FakePlayer(gobject.GObject):
 
 	@property
 	def background(self):
-		return "night_temple_background"
+		return "conference_background"
 
 	def _state_change(self, widget, state):
 		self.emit("state_change", state)
