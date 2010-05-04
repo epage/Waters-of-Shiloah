@@ -32,21 +32,26 @@ class ImageStore(object):
 		self._storePath = storePath
 		self._cachePath = cachePath
 
-	def get_surface_from_store(self, image):
-		path = os.path.join(self._storePath, image)
+	def get_surface_from_store(self, imageName):
+		path = os.path.join(self._storePath, imageName)
 		image = cairo.ImageSurface.create_from_png(path)
 		return image
 
-	def get_image_from_store(self, image):
-		path = os.path.join(self._storePath, image)
+	def get_image_from_store(self, imageName):
+		path = os.path.join(self._storePath, imageName)
 		image = gtk.Image()
 		image.set_from_file(path)
 		return image
 
-	def get_pixbuf_from_store(self, image):
-		path = os.path.join(self._storePath, image)
+	def set_image_from_store(self, image, imageName):
+		path = os.path.join(self._storePath, imageName)
+		image.set_from_file(path)
+		return image
+
+	def get_pixbuf_from_store(self, imageName):
+		path = os.path.join(self._storePath, imageName)
 		return gtk.gdk.pixbuf_new_from_file(path)
 
-	def get_pixbuf_animation_from_store(self, image):
-		path = os.path.join(self._storePath, image)
+	def get_pixbuf_animation_from_store(self, imageName):
+		path = os.path.join(self._storePath, imageName)
 		return gtk.gdk.PixbufAnimation(path)

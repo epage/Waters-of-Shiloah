@@ -119,8 +119,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 
 def run():
-	if hildonize.IS_HILDON_SUPPORTED:
-		gtk.set_application_name(constants.__pretty_app_name__)
+	hildonize.set_application_title(constants.__pretty_app_name__)
 	app = MormonChannelProgram()
 	if not PROFILE_STARTUP:
 		gtk.main()

@@ -47,12 +47,12 @@ except AttributeError:
 	get_app_class = _null_get_app_class
 
 
-def _hildon_set_application_title(window, title):
+def _hildon_set_application_title(title):
+	gtk.set_application_name(title)
+
+
+def _null_set_application_title(title):
 	pass
-
-
-def _null_set_application_title(window, title):
-	window.set_title(title)
 
 
 if IS_HILDON_SUPPORTED:

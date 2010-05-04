@@ -6,11 +6,11 @@ import gtk
 
 import constants
 import hildonize
-import gtk_toolbox
 import util.misc as misc_utils
 
 import banners
 import playcontrol
+import presenter
 
 
 _moduleLogger = logging.getLogger(__name__)
@@ -49,7 +49,6 @@ class BasicWindow(gobject.GObject):
 		self._window.add(self._layout)
 		self._window = hildonize.hildonize_window(self, self._window)
 
-		hildonize.set_application_title(self._window, "%s" % constants.__pretty_app_name__)
 		self._window.set_icon(self._store.get_pixbuf_from_store(self._store.STORE_LOOKUP["icon"]))
 		self._window.connect("key-press-event", self._on_key_press)
 		self._window.connect("window-state-event", self._on_window_state_change)
@@ -155,6 +154,7 @@ class SourceSelector(BasicWindow):
 		self._layout.pack_start(self._buttonLayout, True, True)
 		self._layout.pack_start(self._playcontrol.toplevel, False, True)
 
+		self._window.set_title(constants.__pretty_app_name__)
 		self._window.show_all()
 		self._errorBanner.toplevel.hide()
 		self._playcontrol.toplevel.hide()
@@ -191,13 +191,19 @@ class RadioView(BasicWindow):
 		headerPath = self._store.STORE_LOOKUP["radio_header"]
 		self._header = self._store.get_image_from_store(headerPath)
 
-		self._radioLayout = gtk.VBox(True, 5)
-		self._radioLayout.set_property("border-width", 5)
+		self._treeView = gtk.TreeView()
+
+		self._presenter = presenter.StreamMiniPresenter(self._player, self._store)
+
+		self._radioLayout = gtk.VBox(False)
 		self._radioLayout.pack_start(self._header, False, False)
+		self._radioLayout.pack_start(self._treeView, True, True)
+		self._radioLayout.pack_start(self._presenter.toplevel, False, True)
 
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._radioLayout, True, True)
 
+		self._window.set_title("Radio")
 		self._window.show_all()
 		self._errorBanner.toplevel.hide()
 		self._loadingBanner.toplevel.hide()

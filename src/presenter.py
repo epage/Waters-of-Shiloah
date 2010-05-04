@@ -299,3 +299,39 @@ class StreamPresenter(object):
 			backHeight - self._buttonImage.get_height() + 5,
 		)
 		cairoContext.paint()
+
+
+class StreamMiniPresenter(object):
+
+	def __init__(self, player, store):
+		self._store = store
+		self._player = player
+		self._player.connect("state-change", self._on_player_state_change)
+
+		self._button = gtk.Image()
+		if self._player.state == "play":
+			self._store.set_image_from_store(self._button, self._store.STORE_LOOKUP["play"])
+		else:
+			self._store.set_image_from_store(self._button, self._store.STORE_LOOKUP["pause"])
+
+		self._eventBox = gtk.EventBox()
+		self._eventBox.add(self._button)
+		self._eventBox.connect("button_release_event", self._on_button_release)
+
+	@property
+	def toplevel(self):
+		return self._eventBox
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_state_change(self, player, newState):
+		if self._player.state == "play":
+			self._store.set_image_from_store(self._button, self._store.STORE_LOOKUP["play"])
+		else:
+			self._store.set_image_from_store(self._button, self._store.STORE_LOOKUP["pause"])
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_button_release(self, widget, event):
+		if self._player.state == "play":
+			self._player.pause()
+		else:
+			self._player.play()
