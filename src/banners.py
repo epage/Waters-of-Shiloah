@@ -12,17 +12,26 @@ _moduleLogger = logging.getLogger(__name__)
 class GenericBanner(object):
 
 	def __init__(self):
+		self._indicator = gtk.Image()
+
 		self._label = gtk.Label()
 
-		self._layout = gtk.VBox()
-		self._layout.pack_start(self._label)
+		self._layout = gtk.HBox()
+		self._layout.pack_start(self._indicator, False, False)
+		self._layout.pack_start(self._label, False, True)
 
 	@property
 	def toplevel(self):
 		return self._layout
 
-	def show(self, message):
+	def show(self, icon, message):
 		assert not self._label.get_text(), self._label.get_text()
+		if isinstance(icon, gtk.gdk.PixbufAnimation):
+			self._indicator.set_from_animation(icon)
+		elif isinstance(icon, gtk.gdk.Pixbuf):
+			self._indicator.set_from_pixbuf(icon)
+		else:
+			self._indicator.set_from_stock(icon)
 		self._label.set_text(message)
 		self.toplevel.show()
 
