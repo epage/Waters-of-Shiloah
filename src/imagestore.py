@@ -12,6 +12,7 @@ class ImageStore(object):
 		"pause": "pause.png",
 		"play": "play.png",
 		"stop": "stop.png",
+		"loading": "loading.gif",
 
 		"radio_header": "radio_header.png",
 		"conference_background": "conference_bg.png",
@@ -45,3 +46,7 @@ class ImageStore(object):
 	def get_pixbuf_from_store(self, image):
 		path = os.path.join(self._storePath, image)
 		return gtk.gdk.pixbuf_new_from_file(path)
+
+	def get_pixbuf_animation_from_store(self, image):
+		path = os.path.join(self._storePath, image)
+		return gtk.gdk.PixbufAnimation(path)
