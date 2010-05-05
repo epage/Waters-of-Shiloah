@@ -1,5 +1,6 @@
 import logging
 
+import gobject
 import pango
 import cairo
 import gtk
@@ -10,9 +11,112 @@ import util.misc as misc_utils
 _moduleLogger = logging.getLogger(__name__)
 
 
-class StreamPresenter(object):
+class NavigationBox(gobject.GObject):
+
+	__gsignals__ = {
+		'action' : (
+			gobject.SIGNAL_RUN_LAST,
+			gobject.TYPE_NONE,
+			(gobject.TYPE_STRING, ),
+		),
+		'navigating' : (
+			gobject.SIGNAL_RUN_LAST,
+			gobject.TYPE_NONE,
+			(gobject.TYPE_STRING, ),
+		),
+	}
 
 	MINIMUM_MOVEMENT = 20
+
+	_NO_POSITION = -1, -1
+
+	def __init__(self):
+		gobject.GObject.__init__(self)
+		self._eventBox = gtk.EventBox()
+		self._eventBox.connect("button_press_event", self._on_button_press)
+		self._eventBox.connect("button_release_event", self._on_button_release)
+		self._eventBox.connect("motion_notify_event", self._on_motion_notify)
+
+		self._isPortrait = True
+		self._clickPosition = self._NO_POSITION
+
+	@property
+	def toplevel(self):
+		return self._eventBox
+
+	def set_orientation(self, orientation):
+		if orientation == gtk.ORIENTATION_VERTICAL:
+			self._isPortrait = True
+		elif orientation == gtk.ORIENTATION_HORIZONTAL:
+			self._isPortrait = False
+		else:
+			raise NotImplementedError(orientation)
+
+	def is_active(self):
+		return self._clickPosition != self._NO_POSITION
+
+	def get_state(self, newCoord):
+		if self._clickPosition == self._NO_POSITION:
+			return ""
+
+		if self._isPortrait:
+			delta = (
+				newCoord[0] - self._clickPosition[0],
+				- (newCoord[1] - self._clickPosition[1])
+			)
+		else:
+			delta = (
+				newCoord[1] - self._clickPosition[1],
+				- (newCoord[0] - self._clickPosition[0])
+			)
+		absDelta = (abs(delta[0]), abs(delta[1]))
+		if max(*absDelta) < self.MINIMUM_MOVEMENT:
+			return "clicking"
+
+		if absDelta[0] < absDelta[1]:
+			if 0 < delta[1]:
+				return "up"
+			else:
+				return "down"
+		else:
+			if 0 < delta[0]:
+				return "right"
+			else:
+				return "left"
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_button_press(self, widget, event):
+		if self._clickPosition != self._NO_POSITION:
+			_moduleLogger.debug("Ignoring double click")
+		self._clickPosition = event.get_coords()
+
+		self.emit("navigating", "clicking")
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_button_release(self, widget, event):
+		assert self._clickPosition != self._NO_POSITION
+		try:
+			mousePosition = event.get_coords()
+			state = self.get_state(mousePosition)
+			assert state
+			self.emit("action", state)
+		finally:
+			self._clickPosition = self._NO_POSITION
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_motion_notify(self, widget, event):
+		if self._clickPosition == self._NO_POSITION:
+			return
+
+		mousePosition = event.get_coords()
+		newState = self.get_state(mousePosition)
+		self.emit("navigating", newState)
+
+
+gobject.type_register(NavigationBox)
+
+
+class StreamPresenter(object):
 
 	BUTTON_STATE_PLAY = "play"
 	BUTTON_STATE_PAUSE = "pause"
@@ -20,8 +124,6 @@ class StreamPresenter(object):
 	BUTTON_STATE_BACK = "back"
 	BUTTON_STATE_UP = "up"
 	BUTTON_STATE_CANCEL = "cancel"
-
-	_NO_POSITION = -1, -1
 
 	_STATE_TO_IMAGE = {
 		BUTTON_STATE_PLAY: "play.png",
@@ -40,16 +142,14 @@ class StreamPresenter(object):
 
 		self._image = gtk.DrawingArea()
 		self._image.connect("expose_event", self._on_expose)
-		self._imageEvents = gtk.EventBox()
-		self._imageEvents.connect("motion_notify_event", self._on_motion_notify)
-		self._imageEvents.connect("button_press_event", self._on_button_press)
-		self._imageEvents.connect("button_release_event", self._on_button_release)
-		self._imageEvents.add(self._image)
+		self._imageNav = NavigationBox()
+		self._imageNav.toplevel.add(self._image)
+		self._imageNav.connect("navigating", self._on_navigating)
+		self._imageNav.connect("action", self._on_nav_action)
 
 		self._isPortrait = True
 
 		self._canNavigate = True
-		self._clickPosition = self._NO_POSITION
 		self._potentialButtonState = self.BUTTON_STATE_PLAY
 		self._currentButtonState = self.BUTTON_STATE_PLAY
 
@@ -68,9 +168,11 @@ class StreamPresenter(object):
 
 	@property
 	def toplevel(self):
-		return self._imageEvents
+		return self._imageNav.toplevel
 
 	def set_orientation(self, orientation):
+		self._imageNav.set_orientation(orientation)
+
 		if orientation == gtk.ORIENTATION_VERTICAL:
 			self._isPortrait = True
 		elif orientation == gtk.ORIENTATION_HORIZONTAL:
@@ -96,7 +198,7 @@ class StreamPresenter(object):
 
 		if newState != self._currentButtonState:
 			self._currentButtonState = newState
-			if self._clickPosition == self._NO_POSITION:
+			if not self._imageNav.is_active():
 				cairoContext = self._image.window.cairo_create()
 				if not self._isPortrait:
 					cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
@@ -116,7 +218,7 @@ class StreamPresenter(object):
 
 		if newPotState != self._potentialButtonState:
 			self._potentialButtonState = newPotState
-			if self._clickPosition == self._NO_POSITION:
+			if not self._imageNav.is_active():
 				cairoContext = self._image.window.cairo_create()
 				if not self._isPortrait:
 					cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
@@ -134,7 +236,7 @@ class StreamPresenter(object):
 
 		imagePath = self._store.STORE_LOOKUP[self._player.background]
 		self._backgroundImage = self._store.get_surface_from_store(imagePath)
-		if self._clickPosition == self._NO_POSITION:
+		if not self._imageNav.get_state():
 			cairoContext = self._image.window.cairo_create()
 			if not self._isPortrait:
 				cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
@@ -146,91 +248,55 @@ class StreamPresenter(object):
 			self._draw_presenter(cairoContext, self._potentialButtonState)
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_button_press(self, widget, event):
-		self._clickPosition = event.get_coords()
-		if self._currentButtonState == self.BUTTON_STATE_PLAY:
-			newState = self.BUTTON_STATE_PAUSE
-		else:
-			newState = self.BUTTON_STATE_PLAY
-		self._potentialButtonState = newState
+	def _on_navigating(self, widget, navState):
+		buttonState = self._translate_state(navState)
+		self._potentialButtonState = buttonState
 		cairoContext = self._image.window.cairo_create()
 		if not self._isPortrait:
 			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
 		self._draw_state(cairoContext, self._potentialButtonState)
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_button_release(self, widget, event):
+	def _on_nav_action(self, widget, navState):
 		try:
-			mousePosition = event.get_coords()
-			newState = self._calculate_state(mousePosition)
-			if newState == self.BUTTON_STATE_PLAY:
+			buttonState = self._translate_state(navState)
+			if buttonState == self.BUTTON_STATE_PLAY:
 				self._player.play()
-			elif newState == self.BUTTON_STATE_PAUSE:
+			elif buttonState == self.BUTTON_STATE_PAUSE:
 				self._player.pause()
-			elif newState == self.BUTTON_STATE_NEXT:
+			elif buttonState == self.BUTTON_STATE_NEXT:
 				self._player.next()
-			elif newState == self.BUTTON_STATE_BACK:
+			elif buttonState == self.BUTTON_STATE_BACK:
 				self._player.back()
-			elif newState == self.BUTTON_STATE_UP:
+			elif buttonState == self.BUTTON_STATE_UP:
 				raise NotImplementedError("Drag-down not implemented yet")
-			elif newState == self.BUTTON_STATE_CANCEL:
+			elif buttonState == self.BUTTON_STATE_CANCEL:
 				pass
 		finally:
 			if self._player.state == "play":
-				newState = self.BUTTON_STATE_PLAY
+				buttonState = self.BUTTON_STATE_PLAY
 			else:
-				newState = self.BUTTON_STATE_PAUSE
-			self._potentialButtonState = newState
-			cairoContext = self._image.window.cairo_create()
-			if not self._isPortrait:
-				cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-			self._draw_state(cairoContext, self._potentialButtonState)
-			self._clickPosition = self._NO_POSITION
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_motion_notify(self, widget, event):
-		if self._clickPosition == self._NO_POSITION:
-			return
-
-		mousePosition = event.get_coords()
-		newState = self._calculate_state(mousePosition)
-		if newState != self._potentialButtonState:
-			self._potentialButtonState = newState
+				buttonState = self.BUTTON_STATE_PAUSE
+			self._potentialButtonState = buttonState
 			cairoContext = self._image.window.cairo_create()
 			if not self._isPortrait:
 				cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
 			self._draw_state(cairoContext, self._potentialButtonState)
 
-	def _calculate_state(self, newCoord):
-		assert self._clickPosition != self._NO_POSITION
-
-		if self._isPortrait:
-			delta = (
-				newCoord[0] - self._clickPosition[0],
-				- (newCoord[1] - self._clickPosition[1])
-			)
-		else:
-			delta = (
-				newCoord[1] - self._clickPosition[1],
-				- (newCoord[0] - self._clickPosition[0])
-			)
-		absDelta = (abs(delta[0]), abs(delta[1]))
-		if max(*absDelta) < self.MINIMUM_MOVEMENT or not self._canNavigate:
+	def _translate_state(self, navState):
+		if navState == "clicking" or not self._canNavigate:
 			if self._currentButtonState == self.BUTTON_STATE_PLAY:
 				return self.BUTTON_STATE_PAUSE
 			else:
 				return self.BUTTON_STATE_PLAY
-
-		if absDelta[0] < absDelta[1]:
-			if 0 < delta[1]:
-				return self.BUTTON_STATE_CANCEL
-			else:
-				return self.BUTTON_STATE_UP
-		else:
-			if 0 < delta[0]:
-				return self.BUTTON_STATE_BACK
-			else:
-				return self.BUTTON_STATE_NEXT
+		elif navState == "down":
+			return self.BUTTON_STATE_UP
+		elif navState == "up":
+			return self.BUTTON_STATE_CANCEL
+		elif navState == "left":
+			return self.BUTTON_STATE_NEXT
+		elif navState == "right":
+			return self.BUTTON_STATE_BACK
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_expose(self, widget, event):
