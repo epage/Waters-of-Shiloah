@@ -34,6 +34,7 @@ class BasicWindow(gobject.GObject):
 
 	def __init__(self, player, store, index):
 		gobject.GObject.__init__(self)
+		self._isDestroyed = False
 
 		self._player = player
 		self._store = store
@@ -54,6 +55,7 @@ class BasicWindow(gobject.GObject):
 		self._window.set_icon(self._store.get_pixbuf_from_store(self._store.STORE_LOOKUP["icon"]))
 		self._window.connect("key-press-event", self._on_key_press)
 		self._window.connect("window-state-event", self._on_window_state_change)
+		self._window.connect("destroy", self._on_destroy)
 
 	@property
 	def window(self):
@@ -78,6 +80,10 @@ class BasicWindow(gobject.GObject):
 			self._window.fullscreen()
 		else:
 			self._window.unfullscreen()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_destroy(self, *args):
+		self._isDestroyed = True
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_window_state_change(self, widget, event, *args):
@@ -225,16 +231,20 @@ class RadioView(BasicWindow):
 		self._radioLayout.pack_start(self._treeScroller, True, True)
 		self._radioLayout.pack_start(self._presenter.toplevel, False, True)
 
+		self._programNavigation = presenter.NavigationBox()
+		self._programNavigation.toplevel.add(self._radioLayout)
+		self._programNavigation.connect("action", self._on_nav_action)
+
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
-		self._layout.pack_start(self._radioLayout, True, True)
+		self._layout.pack_start(self._programNavigation.toplevel, True, True)
 
 		self._window.set_title("Radio")
 		self._window.show_all()
 		self._errorBanner.toplevel.hide()
 		self._loadingBanner.toplevel.hide()
 
-		self._show_loading()
-		self._index.download_radio(self._on_channels, self._on_load_error)
+		self._dateShown = datetime.datetime.now()
+		self._refresh()
 
 	def _show_loading(self):
 		animationPath = self._store.STORE_LOOKUP["loading"]
@@ -244,8 +254,33 @@ class RadioView(BasicWindow):
 	def _hide_loading(self):
 		self._loadingBanner.hide()
 
+	def _refresh(self):
+		self._programmingModel.clear()
+		self._show_loading()
+		self._index.download_radio(self._on_channels, self._on_load_error)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_nav_action(self, widget, navState):
+		_moduleLogger.info(navState)
+		if navState == "clicking":
+			pass
+		elif navState == "down":
+			self.window.destroy()
+		elif navState == "up":
+			pass
+		elif navState == "left":
+			self._dateShown += datetime.timedelta(days=1)
+			self._refresh()
+		elif navState == "right":
+			self._dateShown -= datetime.timedelta(days=1)
+			self._refresh()
+
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_channels(self, channels):
+		if self._isDestroyed:
+			_moduleLogger.info("Download complete but window destroyed")
+			return
+
 		channels = list(channels)
 		if 1 < len(channels):
 			_moduleLogger.warning("More channels now available!")
@@ -254,6 +289,10 @@ class RadioView(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_channel(self, programs):
+		if self._isDestroyed:
+			_moduleLogger.info("Download complete but window destroyed")
+			return
+
 		self._hide_loading()
 		for program in programs:
 			row = program["time"], program["title"]
@@ -264,9 +303,7 @@ class RadioView(BasicWindow):
 		self._treeView.get_selection().select_path(path)
 
 	def _get_current_row(self):
-		now = datetime.datetime.now()
-		nowTime = now.strftime("%H:%M:%S")
-		print nowTime
+		nowTime = self._dateShown.strftime("%H:%M:%S")
 		for i, row in enumerate(self._programmingModel):
 			if nowTime < row[0]:
 				return i - 1
