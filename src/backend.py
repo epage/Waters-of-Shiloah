@@ -29,11 +29,19 @@ class Backend(object):
 		channels = tree.find("channels")
 		return self._process_list(channels, ["description", "url", "port"])
 
-	def get_radio_channel_programming(self, chanId):
-		tree = self._get_page_with_validation(
-			action="lds.radio.radiochannels.programming.query",
-			channelID=chanId,
-		)
+	def get_radio_channel_programming(self, chanId, date=None):
+		if date is not None:
+			date = date.strftime("%Y-%m-%d")
+			tree = self._get_page_with_validation(
+				action="lds.radio.radiochannels.programming.query",
+				channelID=chanId,
+				date=date,
+			)
+		else:
+			tree = self._get_page_with_validation(
+				action="lds.radio.radiochannels.programming.query",
+				channelID=chanId,
+			)
 		programs = tree.find("programs")
 		return self._process_list(programs, ["date", "time", "title", "shortdescription", "artist"])
 
