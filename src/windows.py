@@ -219,6 +219,7 @@ class RadioView(BasicWindow):
 		self._treeView.set_model(self._programmingModel)
 		self._treeView.append_column(timeColumn)
 		self._treeView.append_column(titleColumn)
+		self._treeView.get_selection().connect("changed", self._on_row_changed)
 
 		self._treeScroller = gtk.ScrolledWindow()
 		self._treeScroller.add(self._treeView)
@@ -255,9 +256,17 @@ class RadioView(BasicWindow):
 		self._loadingBanner.hide()
 
 	def _refresh(self):
-		self._programmingModel.clear()
 		self._show_loading()
+		self._programmingModel.clear()
 		self._index.download_radio(self._on_channels, self._on_load_error)
+
+	def _get_current_row(self):
+		nowTime = self._dateShown.strftime("%H:%M:%S")
+		for i, row in enumerate(self._programmingModel):
+			if nowTime < row[0]:
+				return i - 1
+		else:
+			return i
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_nav_action(self, widget, navState):
@@ -302,15 +311,14 @@ class RadioView(BasicWindow):
 		self._treeView.scroll_to_cell(path)
 		self._treeView.get_selection().select_path(path)
 
-	def _get_current_row(self):
-		nowTime = self._dateShown.strftime("%H:%M:%S")
-		for i, row in enumerate(self._programmingModel):
-			if nowTime < row[0]:
-				return i - 1
-		else:
-			return i
-
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_load_error(self, exception):
 		self._hide_loading()
 		self._errorBanner.push_message(exception)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_row_changed(self, selection):
+		path = (self._get_current_row(), )
+		if not selection.path_is_selected(path):
+			# Undo the user's changing of the selection
+			selection.select_path(path)
