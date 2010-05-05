@@ -1,4 +1,5 @@
 import ConfigParser
+import datetime
 import logging
 
 import gobject
@@ -31,11 +32,12 @@ class BasicWindow(gobject.GObject):
 		),
 	}
 
-	def __init__(self, player, store):
+	def __init__(self, player, store, index):
 		gobject.GObject.__init__(self)
 
 		self._player = player
 		self._store = store
+		self._index = index
 
 		self._clipboard = gtk.clipboard_get()
 		self._windowInFullscreen = False
@@ -119,8 +121,8 @@ class BasicWindow(gobject.GObject):
 
 class SourceSelector(BasicWindow):
 
-	def __init__(self, player, store):
-		BasicWindow.__init__(self, player, store)
+	def __init__(self, player, store, index):
+		BasicWindow.__init__(self, player, store, index)
 
 		self._radioButton = self._create_button("radio", "Radio")
 		self._radioButton.connect("clicked", self._on_radio_selected)
@@ -175,7 +177,7 @@ class SourceSelector(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_radio_selected(self, *args):
-		radioView = RadioView(self._player, self._store)
+		radioView = RadioView(self._player, self._store, self._index)
 		radioView.window.set_modal(True)
 		radioView.window.set_transient_for(self._window)
 		radioView.window.set_default_size(*self._window.get_size())
@@ -183,21 +185,44 @@ class SourceSelector(BasicWindow):
 
 class RadioView(BasicWindow):
 
-	def __init__(self, player, store):
-		BasicWindow.__init__(self, player, store)
+	def __init__(self, player, store, index):
+		BasicWindow.__init__(self, player, store, index)
 
 		self._loadingBanner = banners.GenericBanner()
 
 		headerPath = self._store.STORE_LOOKUP["radio_header"]
 		self._header = self._store.get_image_from_store(headerPath)
 
+		self._programmingModel = gtk.ListStore(
+			gobject.TYPE_STRING,
+			gobject.TYPE_STRING,
+		)
+
+		textrenderer = gtk.CellRendererText()
+		timeColumn = gtk.TreeViewColumn("Time")
+		timeColumn.pack_start(textrenderer, expand=True)
+		timeColumn.add_attribute(textrenderer, "text", 0)
+
+		textrenderer = gtk.CellRendererText()
+		titleColumn = gtk.TreeViewColumn("Program")
+		titleColumn.pack_start(textrenderer, expand=True)
+		titleColumn.add_attribute(textrenderer, "text", 1)
+
 		self._treeView = gtk.TreeView()
+		self._treeView.set_headers_visible(False)
+		self._treeView.set_model(self._programmingModel)
+		self._treeView.append_column(timeColumn)
+		self._treeView.append_column(titleColumn)
+
+		self._treeScroller = gtk.ScrolledWindow()
+		self._treeScroller.add(self._treeView)
+		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
 
 		self._presenter = presenter.StreamMiniPresenter(self._player, self._store)
 
 		self._radioLayout = gtk.VBox(False)
 		self._radioLayout.pack_start(self._header, False, False)
-		self._radioLayout.pack_start(self._treeView, True, True)
+		self._radioLayout.pack_start(self._treeScroller, True, True)
 		self._radioLayout.pack_start(self._presenter.toplevel, False, True)
 
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
@@ -208,6 +233,9 @@ class RadioView(BasicWindow):
 		self._errorBanner.toplevel.hide()
 		self._loadingBanner.toplevel.hide()
 
+		self._show_loading()
+		self._index.download_radio(self._on_channels, self._on_load_error)
+
 	def _show_loading(self):
 		animationPath = self._store.STORE_LOOKUP["loading"]
 		animation = self._store.get_pixbuf_animation_from_store(animationPath)
@@ -215,3 +243,37 @@ class RadioView(BasicWindow):
 
 	def _hide_loading(self):
 		self._loadingBanner.hide()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_channels(self, channels):
+		channels = list(channels)
+		if 1 < len(channels):
+			_moduleLogger.warning("More channels now available!")
+		channel = channels[0]
+		self._index.download_radio(self._on_channel, self._on_load_error, channel["id"])
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_channel(self, programs):
+		self._hide_loading()
+		for program in programs:
+			row = program["time"], program["title"]
+			self._programmingModel.append(row)
+
+		path = (self._get_current_row(), )
+		self._treeView.scroll_to_cell(path)
+		self._treeView.get_selection().select_path(path)
+
+	def _get_current_row(self):
+		now = datetime.datetime.now()
+		nowTime = now.strftime("%H:%M:%S")
+		print nowTime
+		for i, row in enumerate(self._programmingModel):
+			if nowTime < row[0]:
+				return i - 1
+		else:
+			return i
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_load_error(self, exception):
+		self._hide_loading()
+		self._errorBanner.push_message(exception)

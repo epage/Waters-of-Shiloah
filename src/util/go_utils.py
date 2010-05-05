@@ -153,6 +153,10 @@ class AsyncPool(object):
 			pass # eat up queue to cut down dumb work
 		self.__workQueue.put(_QUEUE_EMPTY)
 
+	def clear_tasks(self):
+		for _ in algorithms.itr_available(self.__workQueue):
+			pass # eat up queue to cut down dumb work
+
 	def add_task(self, func, args, kwds, on_success, on_error):
 		task = func, args, kwds, on_success, on_error
 		self.__workQueue.put(task)

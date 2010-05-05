@@ -12,12 +12,8 @@ import gc
 import logging
 import ConfigParser
 
+import gobject
 import gtk
-
-try:
-	import hildon
-except ImportError:
-	hildon = None
 
 try:
 	import osso
@@ -30,6 +26,7 @@ import util.misc as misc_utils
 
 import imagestore
 import player
+import index
 import windows
 
 
@@ -41,8 +38,11 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 	def __init__(self):
 		super(MormonChannelProgram, self).__init__()
-		self._player = player.Player()
 		self._store = imagestore.ImageStore("../data", "../data")
+		self._index = index.AudioIndex()
+		self._player = player.Player()
+
+		self._index.start()
 
 		if not hildonize.IS_HILDON_SUPPORTED:
 			_moduleLogger.info("No hildonization support")
@@ -56,7 +56,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 			self._osso_c = None
 			self._deviceState = None
 
-		self._sourceSelector = windows.SourceSelector(self._player, self._store)
+		self._sourceSelector = windows.SourceSelector(self._player, self._store, self._index)
 		self._sourceSelector.window.connect("destroy", self._on_destroy)
 		self._load_settings()
 
@@ -89,8 +89,13 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_destroy(self, widget = None, data = None):
+		self.quit()
+
+	def quit(self):
 		try:
 			self._save_settings()
+
+			self._index.stop()
 
 			try:
 				self._deviceState.close()
@@ -119,10 +124,17 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 
 def run():
+	gobject.threads_init()
+	gtk.gdk.threads_init()
+
 	hildonize.set_application_title(constants.__pretty_app_name__)
 	app = MormonChannelProgram()
 	if not PROFILE_STARTUP:
-		gtk.main()
+		try:
+			gtk.main()
+		except KeyboardInterrupt:
+			app.quit()
+			raise
 
 
 if __name__ == "__main__":
