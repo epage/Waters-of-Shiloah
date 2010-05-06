@@ -478,6 +478,7 @@ class ConferencesWindow(ListWindow):
 		yield gobject.TYPE_STRING, column
 
 	def _get_current_row(self):
+		# @todo Not implemented yet
 		return 0
 
 	def _refresh(self):
@@ -542,6 +543,7 @@ class ConferenceSessionsWindow(ListWindow):
 		yield gobject.TYPE_STRING, column
 
 	def _get_current_row(self):
+		# @todo Not implemented yet
 		return 0
 
 	def _refresh(self):
@@ -606,6 +608,7 @@ class ConferenceTalksWindow(ListWindow):
 		yield gobject.TYPE_STRING, column
 
 	def _get_current_row(self):
+		# @todo Not implemented yet
 		return 0
 
 	def _refresh(self):
