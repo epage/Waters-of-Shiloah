@@ -1,3 +1,5 @@
+# @todo Add icons to buttons/rows to indicate that the currently playing track is coming from that
+
 import ConfigParser
 import datetime
 import logging
@@ -154,8 +156,8 @@ class SourceSelector(BasicWindow):
 		self._scriptureWrapper = gtk.VBox()
 		self._scriptureWrapper.pack_start(self._scriptureButton, False, True)
 
-		self._buttonLayout = gtk.VBox(True, 5)
-		self._buttonLayout.set_property("border-width", 5)
+		self._buttonLayout = gtk.VButtonBox()
+		self._buttonLayout.set_layout(gtk.BUTTONBOX_SPREAD)
 		self._buttonLayout.pack_start(self._radioWrapper, True, True)
 		self._buttonLayout.pack_start(self._conferenceWrapper, True, True)
 		self._buttonLayout.pack_start(self._magazineWrapper, True, True)
