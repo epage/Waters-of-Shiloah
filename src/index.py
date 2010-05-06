@@ -14,22 +14,12 @@ class AudioIndex(object):
 	def stop(self):
 		self._indexing.stop()
 
-	def download_radio(self, on_success, on_error, *ids):
+	def download(self, func, on_success, on_error, *args, **kwds):
 		self._indexing.clear_tasks()
-		if ids:
-			assert len(ids) == 1
-			self._indexing.add_task(
-				self._backend.get_radio_channel_programming,
-				(ids[0], ),
-				{},
-				on_success,
-				on_error,
-			)
-		else:
-			self._indexing.add_task(
-				self._backend.get_radio_channels,
-				(),
-				{},
-				on_success,
-				on_error,
-			)
+		self._indexing.add_task(
+			getattr(self._backend, func),
+			args,
+			kwds,
+			on_success,
+			on_error,
+		)

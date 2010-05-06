@@ -198,6 +198,10 @@ class RadioView(BasicWindow):
 
 		headerPath = self._store.STORE_LOOKUP["radio_header"]
 		self._header = self._store.get_image_from_store(headerPath)
+		self._headerNavigation = presenter.NavigationBox()
+		self._headerNavigation.toplevel.add(self._header)
+		self._headerNavigation.connect("action", self._on_nav_action)
+
 
 		self._programmingModel = gtk.ListStore(
 			gobject.TYPE_STRING,
@@ -226,18 +230,17 @@ class RadioView(BasicWindow):
 		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
 
 		self._presenter = presenter.StreamMiniPresenter(self._player, self._store)
+		self._presenterNavigation = presenter.NavigationBox()
+		self._presenterNavigation.toplevel.add(self._presenter.toplevel)
+		self._presenterNavigation.connect("action", self._on_nav_action)
 
 		self._radioLayout = gtk.VBox(False)
-		self._radioLayout.pack_start(self._header, False, False)
+		self._radioLayout.pack_start(self._headerNavigation.toplevel, False, False)
 		self._radioLayout.pack_start(self._treeScroller, True, True)
-		self._radioLayout.pack_start(self._presenter.toplevel, False, True)
-
-		self._programNavigation = presenter.NavigationBox()
-		self._programNavigation.toplevel.add(self._radioLayout)
-		self._programNavigation.connect("action", self._on_nav_action)
+		self._radioLayout.pack_start(self._presenterNavigation.toplevel, False, True)
 
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
-		self._layout.pack_start(self._programNavigation.toplevel, True, True)
+		self._layout.pack_start(self._radioLayout, True, True)
 
 		self._window.set_title("Radio")
 		self._window.show_all()
@@ -258,19 +261,26 @@ class RadioView(BasicWindow):
 	def _refresh(self):
 		self._show_loading()
 		self._programmingModel.clear()
-		self._index.download_radio(self._on_channels, self._on_load_error)
+		self._index.download(
+			"get_radio_channels",
+			self._on_channels,
+			self._on_load_error,
+		)
 
 	def _get_current_row(self):
 		nowTime = self._dateShown.strftime("%H:%M:%S")
+		i = 0
 		for i, row in enumerate(self._programmingModel):
 			if nowTime < row[0]:
-				return i - 1
+				if i == 0:
+					return 0
+				else:
+					return i - 1
 		else:
 			return i
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_nav_action(self, widget, navState):
-		_moduleLogger.info(navState)
 		if navState == "clicking":
 			pass
 		elif navState == "down":
@@ -294,7 +304,13 @@ class RadioView(BasicWindow):
 		if 1 < len(channels):
 			_moduleLogger.warning("More channels now available!")
 		channel = channels[0]
-		self._index.download_radio(self._on_channel, self._on_load_error, channel["id"])
+		self._index.download(
+			"get_radio_channel_programming",
+			self._on_channel,
+			self._on_load_error,
+			channel["id"],
+			self._dateShown
+		)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_channel(self, programs):
@@ -318,7 +334,11 @@ class RadioView(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_row_changed(self, selection):
-		path = (self._get_current_row(), )
+		if len(self._programmingModel) == 0:
+			return
+
+		rowIndex = self._get_current_row()
+		path = (rowIndex, )
 		if not selection.path_is_selected(path):
 			# Undo the user's changing of the selection
 			selection.select_path(path)
