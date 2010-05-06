@@ -160,6 +160,7 @@ if __name__ == "__main__":
 		for confData in confs:
 			sessions = list(b.get_conference_sessions(confData["id"]))
 			for sessionData in sessions:
+				print sessionData
 				talks = list(b.get_conference_talks(sessionData["id"]))
 				print talks
 
@@ -168,8 +169,8 @@ if __name__ == "__main__":
 		print mags
 		for magData in mags:
 			issues = list(b.get_magazine_issues(magData["id"]))
-			issues
 			for issueData in issues:
+				print issueData
 				articles = list(b.get_magazine_articles(issueData["id"]))
 				print articles
 
@@ -178,7 +179,7 @@ if __name__ == "__main__":
 		print mags
 		for magData in mags:
 			books = list(b.get_scripture_books(magData["id"]))
-			print books
 			for bookData in books:
+				print bookData
 				chapters = list(b.get_scripture_chapters(bookData["id"]))
 				print chapters

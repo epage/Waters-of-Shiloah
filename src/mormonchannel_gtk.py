@@ -43,22 +43,26 @@ class MormonChannelProgram(hildonize.get_app_class()):
 		self._player = player.Player()
 
 		self._index.start()
+		try:
 
-		if not hildonize.IS_HILDON_SUPPORTED:
-			_moduleLogger.info("No hildonization support")
+			if not hildonize.IS_HILDON_SUPPORTED:
+				_moduleLogger.info("No hildonization support")
 
-		if osso is not None:
-			self._osso_c = osso.Context(constants.__app_name__, constants.__version__, False)
-			self._deviceState = osso.DeviceState(self._osso_c)
-			self._deviceState.set_device_state_callback(self._on_device_state_change, 0)
-		else:
-			_moduleLogger.info("No osso support")
-			self._osso_c = None
-			self._deviceState = None
+			if osso is not None:
+				self._osso_c = osso.Context(constants.__app_name__, constants.__version__, False)
+				self._deviceState = osso.DeviceState(self._osso_c)
+				self._deviceState.set_device_state_callback(self._on_device_state_change, 0)
+			else:
+				_moduleLogger.info("No osso support")
+				self._osso_c = None
+				self._deviceState = None
 
-		self._sourceSelector = windows.SourceSelector(self._player, self._store, self._index)
-		self._sourceSelector.window.connect("destroy", self._on_destroy)
-		self._load_settings()
+			self._sourceSelector = windows.SourceSelector(self._player, self._store, self._index)
+			self._sourceSelector.window.connect("destroy", self._on_destroy)
+			self._load_settings()
+		except:
+			self._index.stop()
+			raise
 
 	def _save_settings(self):
 		config = ConfigParser.SafeConfigParser()

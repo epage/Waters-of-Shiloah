@@ -128,25 +128,29 @@ class BasicWindow(gobject.GObject):
 class SourceSelector(BasicWindow):
 
 	def __init__(self, player, store, index):
+		self._languages = []
+
 		BasicWindow.__init__(self, player, store, index)
 
+		self._loadingBanner = banners.GenericBanner()
+
 		self._radioButton = self._create_button("radio", "Radio")
-		self._radioButton.connect("clicked", self._on_radio_selected)
+		self._radioButton.connect("clicked", self._on_source_selected, RadioWindow)
 		self._radioWrapper = gtk.VBox()
 		self._radioWrapper.pack_start(self._radioButton, False, True)
 
 		self._conferenceButton = self._create_button("conferences", "Conferences")
-		#self._conferenceButton.connect("clicked", self._on_conference_selected)
+		self._conferenceButton.connect("clicked", self._on_source_selected, ConferencesWindow)
 		self._conferenceWrapper = gtk.VBox()
 		self._conferenceWrapper.pack_start(self._conferenceButton, False, True)
 
 		self._magazineButton = self._create_button("magazines", "Magazines")
-		#self._magazineButton.connect("clicked", self._on_magazine_selected)
+		#self._magazineButton.connect("clicked", self._on_source_selected)
 		self._magazineWrapper = gtk.VBox()
 		self._magazineWrapper.pack_start(self._magazineButton, False, True)
 
 		self._scriptureButton = self._create_button("scriptures", "Scriptures")
-		#self._scriptureButton.connect("clicked", self._on_scripture_selected)
+		#self._scriptureButton.connect("clicked", self._on_source_selected)
 		self._scriptureWrapper = gtk.VBox()
 		self._scriptureWrapper.pack_start(self._scriptureButton, False, True)
 
@@ -159,6 +163,7 @@ class SourceSelector(BasicWindow):
 
 		self._playcontrol = playcontrol.PlayControl(player, store)
 
+		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._buttonLayout, True, True)
 		self._layout.pack_start(self._playcontrol.toplevel, False, True)
 
@@ -166,6 +171,26 @@ class SourceSelector(BasicWindow):
 		self._window.show_all()
 		self._errorBanner.toplevel.hide()
 		self._playcontrol.toplevel.hide()
+
+		self._refresh()
+
+	def _show_loading(self):
+		animationPath = self._store.STORE_LOOKUP["loading"]
+		animation = self._store.get_pixbuf_animation_from_store(animationPath)
+		self._loadingBanner.show(animation, "Loading...")
+		self._buttonLayout.set_sensitive(False)
+
+	def _hide_loading(self):
+		self._loadingBanner.hide()
+		self._buttonLayout.set_sensitive(True)
+
+	def _refresh(self):
+		self._show_loading()
+		self._index.download(
+			"get_languages",
+			self._on_languages,
+			self._on_error,
+		)
 
 	def _create_button(self, icon, message):
 		image = self._store.get_image_from_store(self._store.STORE_LOOKUP[icon])
@@ -182,16 +207,29 @@ class SourceSelector(BasicWindow):
 		return button
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_radio_selected(self, *args):
-		radioView = RadioView(self._player, self._store, self._index)
-		radioView.window.set_modal(True)
-		radioView.window.set_transient_for(self._window)
-		radioView.window.set_default_size(*self._window.get_size())
+	def _on_languages(self, languages):
+		self._hide_loading()
+		self._languages = list(languages)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_error(self, exception):
+		self._hide_loading()
+		self._errorBanner.push_message(exception)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_source_selected(self, widget, Source):
+		sourceWindow = Source(self._player, self._store, self._index, self._languages[0]["id"])
+		sourceWindow.window.set_modal(True)
+		sourceWindow.window.set_transient_for(self._window)
+		sourceWindow.window.set_default_size(*self._window.get_size())
 
 
-class RadioView(BasicWindow):
+gobject.type_register(SourceSelector)
 
-	def __init__(self, player, store, index):
+
+class RadioWindow(BasicWindow):
+
+	def __init__(self, player, store, index, languageId):
 		BasicWindow.__init__(self, player, store, index)
 
 		self._loadingBanner = banners.GenericBanner()
@@ -309,7 +347,7 @@ class RadioView(BasicWindow):
 			self._on_channel,
 			self._on_load_error,
 			channel["id"],
-			self._dateShown
+			self._dateShown,
 		)
 
 	@misc_utils.log_exception(_moduleLogger)
@@ -342,3 +380,266 @@ class RadioView(BasicWindow):
 		if not selection.path_is_selected(path):
 			# Undo the user's changing of the selection
 			selection.select_path(path)
+
+
+gobject.type_register(RadioWindow)
+
+
+class ListWindow(BasicWindow):
+
+	def __init__(self, player, store, index):
+		BasicWindow.__init__(self, player, store, index)
+
+		self._loadingBanner = banners.GenericBanner()
+
+		modelTypes, columns = zip(*self._get_columns())
+
+		self._model = gtk.ListStore(*modelTypes)
+
+		self._treeView = gtk.TreeView()
+		self._treeView.connect("row-activated", self._on_row_activated)
+		self._treeView.set_headers_visible(False)
+		self._treeView.set_model(self._model)
+		for column in columns:
+			if column is not None:
+				self._treeView.append_column(column)
+
+		self._treeScroller = gtk.ScrolledWindow()
+		self._treeScroller.add(self._treeView)
+		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
+
+		self._playcontrol = playcontrol.PlayControl(self._player, self._store)
+
+		self._contentLayout = gtk.VBox(False)
+		self._contentLayout.pack_start(self._treeScroller, True, True)
+		self._contentLayout.pack_start(self._playcontrol.toplevel, False, True)
+
+		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
+		self._layout.pack_start(self._contentLayout, True, True)
+
+		self._window.show_all()
+		self._errorBanner.toplevel.hide()
+		self._loadingBanner.toplevel.hide()
+
+		self._refresh()
+		self._playcontrol.refresh()
+
+	@classmethod
+	def _get_columns(cls):
+		raise NotImplementedError("")
+
+	def _get_current_row(self):
+		raise NotImplementedError("")
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_row_activated(self, view, path, column):
+		raise NotImplementedError("")
+
+	def _show_loading(self):
+		animationPath = self._store.STORE_LOOKUP["loading"]
+		animation = self._store.get_pixbuf_animation_from_store(animationPath)
+		self._loadingBanner.show(animation, "Loading...")
+
+	def _hide_loading(self):
+		self._loadingBanner.hide()
+
+	def _refresh(self):
+		self._show_loading()
+		self._model.clear()
+
+	def _select_row(self):
+		path = (self._get_current_row(), )
+		self._treeView.scroll_to_cell(path)
+		self._treeView.get_selection().select_path(path)
+
+
+class ConferencesWindow(ListWindow):
+
+	def __init__(self, player, store, index, languageId):
+		self._languageId = languageId
+
+		ListWindow.__init__(self, player, store, index)
+		self._window.set_title("Conferences")
+
+	@classmethod
+	def _get_columns(cls):
+		yield gobject.TYPE_STRING, None
+
+		textrenderer = gtk.CellRendererText()
+		column = gtk.TreeViewColumn("Date")
+		column.pack_start(textrenderer, expand=True)
+		column.add_attribute(textrenderer, "text", 1)
+		yield gobject.TYPE_STRING, column
+
+		textrenderer = gtk.CellRendererText()
+		column = gtk.TreeViewColumn("Conference")
+		column.pack_start(textrenderer, expand=True)
+		column.add_attribute(textrenderer, "text", 2)
+		yield gobject.TYPE_STRING, column
+
+	def _get_current_row(self):
+		return 0
+
+	def _refresh(self):
+		ListWindow._refresh(self)
+		self._index.download(
+			"get_conferences",
+			self._on_conferences,
+			self._on_error,
+			self._languageId,
+		)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_conferences(self, programs):
+		if self._isDestroyed:
+			_moduleLogger.info("Download complete but window destroyed")
+			return
+
+		self._hide_loading()
+		for program in programs:
+			row = program["id"], program["title"], program["full_title"]
+			self._model.append(row)
+
+		path = (self._get_current_row(), )
+		self._treeView.scroll_to_cell(path)
+		self._treeView.get_selection().select_path(path)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_error(self, exception):
+		self._hide_loading()
+		self._errorBanner.push_message(exception)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_row_activated(self, view, path, column):
+		itr = self._model.get_iter(path)
+		conferenceId = self._model.get_value(itr, 0)
+
+		sessionsWindow = ConferenceSessionsWindow(self._player, self._store, self._index, conferenceId)
+		sessionsWindow.window.set_modal(True)
+		sessionsWindow.window.set_transient_for(self._window)
+		sessionsWindow.window.set_default_size(*self._window.get_size())
+
+
+gobject.type_register(ConferencesWindow)
+
+
+class ConferenceSessionsWindow(ListWindow):
+
+	def __init__(self, player, store, index, conferenceId):
+		self._conferenceId = conferenceId
+
+		ListWindow.__init__(self, player, store, index)
+		self._window.set_title("Sessions")
+
+	@classmethod
+	def _get_columns(cls):
+		yield gobject.TYPE_STRING, None
+
+		textrenderer = gtk.CellRendererText()
+		column = gtk.TreeViewColumn("Session")
+		column.pack_start(textrenderer, expand=True)
+		column.add_attribute(textrenderer, "text", 1)
+		yield gobject.TYPE_STRING, column
+
+	def _get_current_row(self):
+		return 0
+
+	def _refresh(self):
+		ListWindow._refresh(self)
+		self._index.download(
+			"get_conference_sessions",
+			self._on_conference_sessions,
+			self._on_error,
+			self._conferenceId,
+		)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_conference_sessions(self, programs):
+		if self._isDestroyed:
+			_moduleLogger.info("Download complete but window destroyed")
+			return
+
+		self._hide_loading()
+		for program in programs:
+			row = program["id"], program["title"]
+			self._model.append(row)
+
+		path = (self._get_current_row(), )
+		self._treeView.scroll_to_cell(path)
+		self._treeView.get_selection().select_path(path)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_error(self, exception):
+		self._hide_loading()
+		self._errorBanner.push_message(exception)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_row_activated(self, view, path, column):
+		itr = self._model.get_iter(path)
+		sessionId = self._model.get_value(itr, 0)
+
+		sessionsWindow = ConferenceTalksWindow(self._player, self._store, self._index, sessionId)
+		sessionsWindow.window.set_modal(True)
+		sessionsWindow.window.set_transient_for(self._window)
+		sessionsWindow.window.set_default_size(*self._window.get_size())
+
+
+gobject.type_register(ConferenceSessionsWindow)
+
+
+class ConferenceTalksWindow(ListWindow):
+
+	def __init__(self, player, store, index, sessionId):
+		self._sessionId = sessionId
+
+		ListWindow.__init__(self, player, store, index)
+		self._window.set_title("Talks")
+
+	@classmethod
+	def _get_columns(cls):
+		yield gobject.TYPE_STRING, None
+
+		textrenderer = gtk.CellRendererText()
+		column = gtk.TreeViewColumn("Talk")
+		column.pack_start(textrenderer, expand=True)
+		column.add_attribute(textrenderer, "text", 1)
+		yield gobject.TYPE_STRING, column
+
+	def _get_current_row(self):
+		return 0
+
+	def _refresh(self):
+		ListWindow._refresh(self)
+		self._index.download(
+			"get_conference_talks",
+			self._on_conference_talks,
+			self._on_error,
+			self._sessionId,
+		)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_conference_talks(self, programs):
+		if self._isDestroyed:
+			_moduleLogger.info("Download complete but window destroyed")
+			return
+
+		self._hide_loading()
+		for program in programs:
+			row = program["id"], "%s\n%s" % (program["title"], program["speaker"])
+			self._model.append(row)
+
+		path = (self._get_current_row(), )
+		self._treeView.scroll_to_cell(path)
+		self._treeView.get_selection().select_path(path)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_error(self, exception):
+		self._hide_loading()
+		self._errorBanner.push_message(exception)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_row_activated(self, view, path, column):
+		raise NotImplementedError("")
+
+
+gobject.type_register(ConferenceTalksWindow)

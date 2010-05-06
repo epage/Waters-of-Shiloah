@@ -1,5 +1,10 @@
+import logging
+
 from util import go_utils
 import backend
+
+
+_moduleLogger = logging.getLogger(__name__)
 
 
 class AudioIndex(object):

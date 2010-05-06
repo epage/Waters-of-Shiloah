@@ -56,6 +56,12 @@ class PlayControl(object):
 		self._layout = gtk.VBox()
 		self._layout.pack_start(self._controls)
 
+	def refresh(self):
+		if not self._player.title:
+			self.toplevel.hide()
+		self._set_navigate(self._player.can_navigate)
+		self._set_state(self._player.state)
+
 	@property
 	def toplevel(self):
 		return self._layout
@@ -102,8 +108,15 @@ class PlayControl(object):
 		else:
 			raise NotImplementedError(orientation)
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_state_change(self, player, newState):
+	def _set_navigate(self, canNavigate):
+		if canNavigate:
+			self._back.show()
+			self._next.show()
+		else:
+			self._back.hide()
+			self._next.hide()
+
+	def _set_state(self, newState):
 		if newState == "play":
 			self._pause.show()
 			self._play.hide()
@@ -114,21 +127,13 @@ class PlayControl(object):
 			self._pause.hide()
 			self._play.show()
 
-		if self._player.can_navigate:
-			self._back.show()
-			self._next.show()
-		else:
-			self._back.hide()
-			self._next.hide()
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_state_change(self, player, newState):
+		self._set_state(newState)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_nav_change(self, player, canNavigate):
-		if canNavigate:
-			self._back.show()
-			self._next.show()
-		else:
-			self._back.hide()
-			self._next.hide()
+		self._set_navigate(canNavigate)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_back_clicked(self, *args):
