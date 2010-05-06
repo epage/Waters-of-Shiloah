@@ -187,6 +187,7 @@ class StreamPresenter(object):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_state_change(self, player, newState):
+		# @bug We only want to folow changes in player when its active
 		if newState == "play":
 			newState = self.BUTTON_STATE_PLAY
 		elif newState == "pause":
@@ -206,6 +207,7 @@ class StreamPresenter(object):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_nav_change(self, player, newState):
+		# @bug We only want to folow changes in player when its active
 		canNavigate = self._player.can_navigate
 		newPotState = self._potentialButtonState
 		if self._canNavigate != canNavigate:
@@ -226,6 +228,7 @@ class StreamPresenter(object):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_title_change(self, player, newState):
+		# @bug We only want to folow changes in player when its active
 		if self._isPortrait:
 			backWidth = self._backgroundImage.get_width()
 			backHeight = self._backgroundImage.get_height()
@@ -258,6 +261,7 @@ class StreamPresenter(object):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_nav_action(self, widget, navState):
+		# @bug We only want to folow changes in player when its active
 		try:
 			buttonState = self._translate_state(navState)
 			if buttonState == self.BUTTON_STATE_PLAY:
