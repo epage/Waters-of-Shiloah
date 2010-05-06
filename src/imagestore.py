@@ -12,6 +12,7 @@ class ImageStore(object):
 		"pause": "pause.png",
 		"play": "play.png",
 		"stop": "stop.png",
+		"home": "home.png",
 		"loading": "loading.gif",
 
 		"radio_header": "radio_header.png",

@@ -130,6 +130,7 @@ class StreamPresenter(object):
 		BUTTON_STATE_PAUSE: "pause.png",
 		BUTTON_STATE_NEXT: "next.png",
 		BUTTON_STATE_BACK: "prev.png",
+		BUTTON_STATE_UP: "home.png",
 	}
 
 	def __init__(self, player, store):
