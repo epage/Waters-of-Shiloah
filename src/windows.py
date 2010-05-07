@@ -234,6 +234,9 @@ class RadioWindow(BasicWindow):
 	def __init__(self, player, store, index, languageId):
 		BasicWindow.__init__(self, player, store, index)
 
+		self._player.connect("state-change", self._on_player_state_change)
+		self._player.connect("title-change", self._on_player_title_change)
+
 		self._loadingBanner = banners.GenericBanner()
 
 		headerPath = self._store.STORE_LOOKUP["radio_header"]
@@ -241,7 +244,7 @@ class RadioWindow(BasicWindow):
 		self._headerNavigation = presenter.NavigationBox()
 		self._headerNavigation.toplevel.add(self._header)
 		self._headerNavigation.connect("action", self._on_nav_action)
-
+		self._headerNavigation.connect("navigating", self._on_navigating)
 
 		self._programmingModel = gtk.ListStore(
 			gobject.TYPE_STRING,
@@ -269,10 +272,15 @@ class RadioWindow(BasicWindow):
 		self._treeScroller.add(self._treeView)
 		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
 
-		self._presenter = presenter.StreamMiniPresenter(self._player, self._store)
+		self._presenter = presenter.StreamMiniPresenter(self._store)
+		if self._player.state == "play":
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		else:
+			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
 		self._presenterNavigation = presenter.NavigationBox()
 		self._presenterNavigation.toplevel.add(self._presenter.toplevel)
 		self._presenterNavigation.connect("action", self._on_nav_action)
+		self._presenterNavigation.connect("navigating", self._on_navigating)
 
 		self._radioLayout = gtk.VBox(False)
 		self._radioLayout.pack_start(self._headerNavigation.toplevel, False, False)
@@ -320,9 +328,53 @@ class RadioWindow(BasicWindow):
 			return i
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_nav_action(self, widget, navState):
+	def _on_player_state_change(self, player, newState):
+		if self._headerNavigation.is_active() or self._presenterNavigation.is_active():
+			return
+
+		if newState == "play":
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		elif newState == "pause":
+			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+		else:
+			_moduleLogger.info("Unhandled player state %s" % newState)
+			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_title_change(self, player, newState):
+		_moduleLogger.info("Player title magically changed to %s" % player.title)
+		self._destroy()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_navigating(self, widget, navState):
 		if navState == "clicking":
-			pass
+			if self._player.state == "play":
+				imageName = "pause"
+			else:
+				imageName = "play"
+		elif navState == "down":
+			imageName = "home"
+		elif navState == "up":
+			imageName = "play"
+		elif navState == "left":
+			imageName = "play"
+		elif navState == "right":
+			imageName = "play"
+
+		self._presenter.set_state(self._store.STORE_LOOKUP[imageName])
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_nav_action(self, widget, navState):
+		if self._player.state == "play":
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		else:
+			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+
+		if navState == "clicking":
+			if self._player.state == "play":
+				self._player.pause()
+			else:
+				self._player.play()
 		elif navState == "down":
 			self.window.destroy()
 		elif navState == "up":

@@ -118,62 +118,24 @@ gobject.type_register(NavigationBox)
 
 class StreamPresenter(object):
 
-	BUTTON_STATE_PLAY = "play"
-	BUTTON_STATE_PAUSE = "pause"
-	BUTTON_STATE_NEXT = "next"
-	BUTTON_STATE_BACK = "back"
-	BUTTON_STATE_UP = "up"
-	BUTTON_STATE_CANCEL = "cancel"
-
-	_STATE_TO_IMAGE = {
-		BUTTON_STATE_PLAY: "play.png",
-		BUTTON_STATE_PAUSE: "pause.png",
-		BUTTON_STATE_NEXT: "next.png",
-		BUTTON_STATE_BACK: "prev.png",
-		BUTTON_STATE_UP: "home.png",
-	}
-
-	def __init__(self, player, store):
+	def __init__(self, store):
 		self._store = store
-
-		self._player = player
-		self._player.connect("state-change", self._on_player_state_change)
-		self._player.connect("navigate-change", self._on_player_nav_change)
-		self._player.connect("title-change", self._on_player_title_change)
 
 		self._image = gtk.DrawingArea()
 		self._image.connect("expose_event", self._on_expose)
-		self._imageNav = NavigationBox()
-		self._imageNav.toplevel.add(self._image)
-		self._imageNav.connect("navigating", self._on_navigating)
-		self._imageNav.connect("action", self._on_nav_action)
 
 		self._isPortrait = True
 
-		self._canNavigate = True
-		self._potentialButtonState = self.BUTTON_STATE_PLAY
-		self._currentButtonState = self.BUTTON_STATE_PLAY
-
-		imagePath = self._store.STORE_LOOKUP[self._player.background]
-		self._backgroundImage = self._store.get_surface_from_store(imagePath)
-		imagePath = self._STATE_TO_IMAGE[self._currentButtonState]
-		self._buttonImage = self._store.get_surface_from_store(imagePath)
-
-		if self._isPortrait:
-			backWidth = self._backgroundImage.get_width()
-			backHeight = self._backgroundImage.get_height()
-		else:
-			backHeight = self._backgroundImage.get_width()
-			backWidth = self._backgroundImage.get_height()
-		self._image.set_size_request(backWidth, backHeight)
+		self._backgroundImage = None
+		self._title = ""
+		self._subtitle = ""
+		self._buttonImage = None
 
 	@property
 	def toplevel(self):
-		return self._imageNav.toplevel
+		return self._image
 
 	def set_orientation(self, orientation):
-		self._imageNav.set_orientation(orientation)
-
 		if orientation == gtk.ORIENTATION_VERTICAL:
 			self._isPortrait = True
 		elif orientation == gtk.ORIENTATION_HORIZONTAL:
@@ -184,52 +146,19 @@ class StreamPresenter(object):
 		cairoContext = self._image.window.cairo_create()
 		if not self._isPortrait:
 			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-		self._draw_presenter(cairoContext, self._currentButtonState)
+		self._draw_presenter(cairoContext)
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_state_change(self, player, newState):
-		# @bug We only want to folow changes in player when its active
-		if newState == "play":
-			newState = self.BUTTON_STATE_PLAY
-		elif newState == "pause":
-			newState = self.BUTTON_STATE_PAUSE
-		elif newState == "stop":
-			newState = self.BUTTON_STATE_PAUSE
-		else:
-			newState = self._currentButtonState
+	def set_state(self, stateImage):
+		self._buttonImage = self._store.get_surface_from_store(stateImage)
 
-		if newState != self._currentButtonState:
-			self._currentButtonState = newState
-			if not self._imageNav.is_active():
-				cairoContext = self._image.window.cairo_create()
-				if not self._isPortrait:
-					cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-				self._draw_state(cairoContext, self._currentButtonState)
+		cairoContext = self._image.window.cairo_create()
+		if not self._isPortrait:
+			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
+		self._draw_state(cairoContext)
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_nav_change(self, player, newState):
-		# @bug We only want to folow changes in player when its active
-		canNavigate = self._player.can_navigate
-		newPotState = self._potentialButtonState
-		if self._canNavigate != canNavigate:
-			self._canNavigate = canNavigate
-			if self._potentialButtonState in (self.BUTTON_STATE_NEXT, self.BUTTON_STATE_BACK):
-				if self._currentButtonState == self.BUTTON_STATE_PLAY:
-					newPotState = self.BUTTON_STATE_PAUSE
-				else:
-					newPotState = self.BUTTON_STATE_PLAY
+	def set_context(self, backgroundImage, title, subtitle):
+		self._backgroundImage = self._store.get_surface_from_store(backgroundImage)
 
-		if newPotState != self._potentialButtonState:
-			self._potentialButtonState = newPotState
-			if not self._imageNav.is_active():
-				cairoContext = self._image.window.cairo_create()
-				if not self._isPortrait:
-					cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-				self._draw_state(cairoContext, self._potentialButtonState)
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_title_change(self, player, newState):
-		# @bug We only want to folow changes in player when its active
 		if self._isPortrait:
 			backWidth = self._backgroundImage.get_width()
 			backHeight = self._backgroundImage.get_height()
@@ -238,82 +167,19 @@ class StreamPresenter(object):
 			backWidth = self._backgroundImage.get_height()
 		self._image.set_size_request(backWidth, backHeight)
 
-		imagePath = self._store.STORE_LOOKUP[self._player.background]
-		self._backgroundImage = self._store.get_surface_from_store(imagePath)
-		if not self._imageNav.get_state():
-			cairoContext = self._image.window.cairo_create()
-			if not self._isPortrait:
-				cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-			self._draw_presenter(cairoContext, self._currentButtonState)
-		else:
-			cairoContext = self._image.window.cairo_create()
-			if not self._isPortrait:
-				cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-			self._draw_presenter(cairoContext, self._potentialButtonState)
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_navigating(self, widget, navState):
-		buttonState = self._translate_state(navState)
-		self._potentialButtonState = buttonState
 		cairoContext = self._image.window.cairo_create()
 		if not self._isPortrait:
 			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-		self._draw_state(cairoContext, self._potentialButtonState)
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_nav_action(self, widget, navState):
-		# @bug We only want to folow changes in player when its active
-		try:
-			buttonState = self._translate_state(navState)
-			if buttonState == self.BUTTON_STATE_PLAY:
-				self._player.play()
-			elif buttonState == self.BUTTON_STATE_PAUSE:
-				self._player.pause()
-			elif buttonState == self.BUTTON_STATE_NEXT:
-				self._player.next()
-			elif buttonState == self.BUTTON_STATE_BACK:
-				self._player.back()
-			elif buttonState == self.BUTTON_STATE_UP:
-				raise NotImplementedError("Drag-down not implemented yet")
-			elif buttonState == self.BUTTON_STATE_CANCEL:
-				pass
-		finally:
-			if self._player.state == "play":
-				buttonState = self.BUTTON_STATE_PLAY
-			else:
-				buttonState = self.BUTTON_STATE_PAUSE
-			self._potentialButtonState = buttonState
-			cairoContext = self._image.window.cairo_create()
-			if not self._isPortrait:
-				cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-			self._draw_state(cairoContext, self._potentialButtonState)
-
-	def _translate_state(self, navState):
-		if navState == "clicking" or not self._canNavigate:
-			if self._currentButtonState == self.BUTTON_STATE_PLAY:
-				return self.BUTTON_STATE_PAUSE
-			else:
-				return self.BUTTON_STATE_PLAY
-		elif navState == "down":
-			return self.BUTTON_STATE_UP
-		elif navState == "up":
-			return self.BUTTON_STATE_CANCEL
-		elif navState == "left":
-			return self.BUTTON_STATE_NEXT
-		elif navState == "right":
-			return self.BUTTON_STATE_BACK
+		self._draw_presenter(cairoContext)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_expose(self, widget, event):
-		self._potentialButtonState = self._player.state
 		cairoContext = self._image.window.cairo_create()
 		if not self._isPortrait:
 			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-		self._draw_presenter(cairoContext, self._player.state)
+		self._draw_presenter(cairoContext)
 
-	def _draw_presenter(self, cairoContext, state):
-		assert state in (self._currentButtonState, self._potentialButtonState)
-
+	def _draw_presenter(self, cairoContext):
 		# Blank things
 		rect = self._image.get_allocation()
 		cairoContext.rectangle(
@@ -327,43 +193,46 @@ class StreamPresenter(object):
 		cairoContext.paint()
 
 		# Draw Background
-		cairoContext.set_source_surface(
-			self._backgroundImage,
-			0,
-			0,
-		)
-		cairoContext.paint()
+		if self._backgroundImage is not None:
+			cairoContext.set_source_surface(
+				self._backgroundImage,
+				0,
+				0,
+			)
+			cairoContext.paint()
 
 		# title
-		if self._player.title:
-			_moduleLogger.info("Displaying text")
+		if self._title or self._subtitle:
 			backWidth = self._backgroundImage.get_width()
 			backHeight = self._backgroundImage.get_height()
 
 			pangoContext = self._image.create_pango_context()
 			textLayout = pango.Layout(pangoContext)
-			textLayout.set_markup(self._player.title)
 
+			textLayout.set_markup(self._subtitle)
+			textWidth, textHeight = textLayout.get_pixel_size()
+			subtitleTextX = backWidth / 2 - textWidth / 2
+			subtitleTextY = backHeight - textHeight - self._buttonImage.get_height()
+			cairoContext.move_to(subtitleTextX, subtitleTextY)
+			cairoContext.set_source_rgb(0, 0, 0)
+			cairoContext.show_layout(textLayout)
+
+			textLayout.set_markup(self._title)
 			textWidth, textHeight = textLayout.get_pixel_size()
 			textX = backWidth / 2 - textWidth / 2
-			textY = backHeight - textHeight - self._buttonImage.get_height()
-
+			textY = subtitleTextY - textHeight
 			cairoContext.move_to(textX, textY)
 			cairoContext.set_source_rgb(0, 0, 0)
 			cairoContext.show_layout(textLayout)
 
-		self._draw_state(cairoContext, state)
+		self._draw_state(cairoContext)
 
-	def _draw_state(self, cairoContext, state):
-		assert state in (self._currentButtonState, self._potentialButtonState)
-		if state == self.BUTTON_STATE_CANCEL:
-			state = self._currentButtonState
-
+	def _draw_state(self, cairoContext):
+		if self._backgroundImage is None or self._buttonImage is None:
+			return
 		backWidth = self._backgroundImage.get_width()
 		backHeight = self._backgroundImage.get_height()
 
-		imagePath = self._STATE_TO_IMAGE[state]
-		self._buttonImage = self._store.get_surface_from_store(imagePath)
 		cairoContext.set_source_surface(
 			self._buttonImage,
 			backWidth / 2 - self._buttonImage.get_width() / 2,
@@ -374,35 +243,20 @@ class StreamPresenter(object):
 
 class StreamMiniPresenter(object):
 
-	def __init__(self, player, store):
+	def __init__(self, store):
 		self._store = store
-		self._player = player
-		self._player.connect("state-change", self._on_player_state_change)
 
 		self._button = gtk.Image()
-		if self._player.state == "play":
-			self._store.set_image_from_store(self._button, self._store.STORE_LOOKUP["play"])
-		else:
-			self._store.set_image_from_store(self._button, self._store.STORE_LOOKUP["pause"])
-
-		self._eventBox = gtk.EventBox()
-		self._eventBox.add(self._button)
-		self._eventBox.connect("button_release_event", self._on_button_release)
 
 	@property
 	def toplevel(self):
-		return self._eventBox
+		return self._button
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_state_change(self, player, newState):
-		if self._player.state == "play":
-			self._store.set_image_from_store(self._button, self._store.STORE_LOOKUP["play"])
-		else:
-			self._store.set_image_from_store(self._button, self._store.STORE_LOOKUP["pause"])
+	def set_orientation(self, orientation):
+		pass
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_button_release(self, widget, event):
-		if self._player.state == "play":
-			self._player.pause()
-		else:
-			self._player.play()
+	def set_state(self, stateImage):
+		self._store.set_image_from_store(self._button, stateImage)
+
+	def set_context(self, backgroundImage, title, subtitle):
+		pass
