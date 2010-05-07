@@ -34,6 +34,10 @@ class Player(gobject.GObject):
 		return ""
 
 	@property
+	def subtitle(self):
+		return ""
+
+	@property
 	def can_navigate(self):
 		return True
 
@@ -43,7 +47,7 @@ class Player(gobject.GObject):
 
 	@property
 	def background(self):
-		return "night_temple_background"
+		return "conference_background"
 
 	def play(self):
 		_moduleLogger.info("play")

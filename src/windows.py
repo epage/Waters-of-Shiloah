@@ -27,10 +27,20 @@ class BasicWindow(gobject.GObject):
 			gobject.TYPE_NONE,
 			(),
 		),
+		'home' : (
+			gobject.SIGNAL_RUN_LAST,
+			gobject.TYPE_NONE,
+			(),
+		),
+		'rotate' : (
+			gobject.SIGNAL_RUN_LAST,
+			gobject.TYPE_NONE,
+			(gobject.TYPE_BOOLEAN, ),
+		),
 		'fullscreen' : (
 			gobject.SIGNAL_RUN_LAST,
 			gobject.TYPE_NONE,
-			(gobject.TYPE_PYOBJECT, ),
+			(gobject.TYPE_BOOLEAN, ),
 		),
 	}
 
@@ -125,6 +135,16 @@ class BasicWindow(gobject.GObject):
 				log = "".join(logLines)
 				self._clipboard.set_text(str(log))
 			return True
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_home(self, *args):
+		self.emit("home")
+		self._window.destroy()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_quit(self, *args):
+		self.emit("quit")
+		self._window.destroy()
 
 
 class SourceSelector(BasicWindow):
@@ -224,6 +244,7 @@ class SourceSelector(BasicWindow):
 		sourceWindow.window.set_modal(True)
 		sourceWindow.window.set_transient_for(self._window)
 		sourceWindow.window.set_default_size(*self._window.get_size())
+		sourceWindow.connect("quit", self._on_quit)
 
 
 gobject.type_register(SourceSelector)
@@ -573,6 +594,8 @@ class ConferencesWindow(ListWindow):
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
+		sessionsWindow.connect("quit", self._on_quit)
+		sessionsWindow.connect("home", self._on_home)
 
 
 gobject.type_register(ConferencesWindow)
@@ -638,6 +661,8 @@ class ConferenceSessionsWindow(ListWindow):
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
+		sessionsWindow.connect("quit", self._on_quit)
+		sessionsWindow.connect("home", self._on_home)
 
 
 gobject.type_register(ConferenceSessionsWindow)
@@ -682,7 +707,7 @@ class ConferenceTalksWindow(ListWindow):
 
 		self._hide_loading()
 		for program in programs:
-			row = program["id"], "%s\n%s" % (program["title"], program["speaker"])
+			row = program, "%s\n%s" % (program["title"], program["speaker"])
 			self._model.append(row)
 
 		path = (self._get_current_row(), )
@@ -696,7 +721,122 @@ class ConferenceTalksWindow(ListWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_row_activated(self, view, path, column):
-		raise NotImplementedError("")
+		itr = self._model.get_iter(path)
+		program = self._model.get_value(itr, 0)
+
+		sessionsWindow = ConferenceTalkWindow(self._player, self._store, self._index, program)
+		sessionsWindow.window.set_modal(True)
+		sessionsWindow.window.set_transient_for(self._window)
+		sessionsWindow.window.set_default_size(*self._window.get_size())
+		sessionsWindow.connect("quit", self._on_quit)
+		sessionsWindow.connect("home", self._on_home)
 
 
 gobject.type_register(ConferenceTalksWindow)
+
+
+class ConferenceTalkWindow(BasicWindow):
+
+	def __init__(self, player, store, index, talkData):
+		BasicWindow.__init__(self, player, store, index)
+
+		self._player.connect("state-change", self._on_player_state_change)
+		self._player.connect("title-change", self._on_player_title_change)
+
+		self._loadingBanner = banners.GenericBanner()
+
+		self._presenter = presenter.StreamPresenter(self._store)
+		self._presenterNavigation = presenter.NavigationBox()
+		self._presenterNavigation.toplevel.add(self._presenter.toplevel)
+		self._presenterNavigation.connect("action", self._on_nav_action)
+		self._presenterNavigation.connect("navigating", self._on_navigating)
+
+		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
+		self._layout.pack_start(self._presenterNavigation.toplevel, True, True)
+
+		self._window.set_title("Talk")
+		self._window.show_all()
+		self._errorBanner.toplevel.hide()
+		self._loadingBanner.toplevel.hide()
+
+		self._presenter.set_context(
+			self._store.STORE_LOOKUP[self._player.background],
+			self._player.title,
+			self._player.subtitle,
+		)
+		if self._player.state == "play":
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		else:
+			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+
+	def _show_loading(self):
+		animationPath = self._store.STORE_LOOKUP["loading"]
+		animation = self._store.get_pixbuf_animation_from_store(animationPath)
+		self._loadingBanner.show(animation, "Loading...")
+
+	def _hide_loading(self):
+		self._loadingBanner.hide()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_state_change(self, player, newState):
+		if self._headerNavigation.is_active() or self._presenterNavigation.is_active():
+			return
+
+		if newState == "play":
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		elif newState == "pause":
+			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+		else:
+			_moduleLogger.info("Unhandled player state %s" % newState)
+			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_title_change(self, player, newState):
+		self._presenter.set_context(
+			self._store.STORE_LOOKUP[self._player.background],
+			self._player.title,
+			self._player.subtitle,
+		)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_navigating(self, widget, navState):
+		if navState == "clicking":
+			if self._player.state == "play":
+				imageName = "pause"
+			else:
+				imageName = "play"
+		elif navState == "down":
+			imageName = "home"
+		elif navState == "up":
+			imageName = "play"
+		elif navState == "left":
+			imageName = "next"
+		elif navState == "right":
+			imageName = "prev"
+
+		self._presenter.set_state(self._store.STORE_LOOKUP[imageName])
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_nav_action(self, widget, navState):
+		if self._player.state == "play":
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		else:
+			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+
+		if navState == "clicking":
+			if self._player.state == "play":
+				self._player.pause()
+			else:
+				self._player.play()
+		elif navState == "down":
+			self.emit("home")
+			self._window.destroy()
+		elif navState == "up":
+			pass
+		elif navState == "left":
+			self._player.next()
+		elif navState == "right":
+			self._player.back()
+
+
+gobject.type_register(ConferenceTalkWindow)
