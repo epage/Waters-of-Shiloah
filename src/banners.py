@@ -70,7 +70,7 @@ class StackingBanner(object):
 
 	def push_message(self, message, icon=""):
 		self._messages.append((message, icon))
-		if 1 == len(self.__messages):
+		if 1 == len(self._messages):
 			self._update_message()
 
 	def push_exception(self):
@@ -79,14 +79,14 @@ class StackingBanner(object):
 		_moduleLogger.exception(userMessage)
 
 	def pop_message(self):
-		del self.__messages[0]
+		del self._messages[0]
 		self._update_message()
 
 	def _update_message(self):
-		if 0 == len(self.__messages):
+		if 0 == len(self._messages):
 			self.toplevel.hide()
 		else:
-			message, icon = self._message[0]
+			message, icon = self._messages[0]
 			self._message.set_text(message)
 			if icon:
 				self._indicator.set_from_stock(icon)
