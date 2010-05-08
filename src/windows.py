@@ -44,13 +44,12 @@ class BasicWindow(gobject.GObject):
 		),
 	}
 
-	def __init__(self, player, store, index):
+	def __init__(self, player, store):
 		gobject.GObject.__init__(self)
 		self._isDestroyed = False
 
 		self._player = player
 		self._store = store
-		self._index = index
 
 		self._clipboard = gtk.clipboard_get()
 		self._windowInFullscreen = False
@@ -153,19 +152,19 @@ class BasicWindow(gobject.GObject):
 class SourceSelector(BasicWindow):
 
 	def __init__(self, player, store, index):
+		BasicWindow.__init__(self, player, store)
 		self._languages = []
-
-		BasicWindow.__init__(self, player, store, index)
+		self._index = index
 
 		self._loadingBanner = banners.GenericBanner()
 
 		self._radioButton = self._create_button("radio", "Radio")
-		self._radioButton.connect("clicked", self._on_source_selected, RadioWindow)
+		self._radioButton.connect("clicked", self._on_source_selected, RadioWindow, "radio")
 		self._radioWrapper = gtk.VBox()
 		self._radioWrapper.pack_start(self._radioButton, False, True)
 
 		self._conferenceButton = self._create_button("conferences", "Conferences")
-		self._conferenceButton.connect("clicked", self._on_source_selected, ConferencesWindow)
+		self._conferenceButton.connect("clicked", self._on_source_selected, ConferencesWindow, "conferences")
 		self._conferenceWrapper = gtk.VBox()
 		self._conferenceWrapper.pack_start(self._conferenceButton, False, True)
 
@@ -214,11 +213,7 @@ class SourceSelector(BasicWindow):
 
 	def _refresh(self):
 		self._show_loading()
-		self._index.download(
-			"get_languages",
-			self._on_languages,
-			self._on_error,
-		)
+		self._index.get_languages(self._on_languages, self._on_error)
 
 	def _create_button(self, icon, message):
 		image = self._store.get_image_from_store(self._store.STORE_LOOKUP[icon])
@@ -242,11 +237,12 @@ class SourceSelector(BasicWindow):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
 		self._hide_loading()
-		self._errorBanner.push_message(exception)
+		self._errorBanner.push_message(str(exception))
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_source_selected(self, widget, Source):
-		sourceWindow = Source(self._player, self._store, self._index, self._languages[0]["id"])
+	def _on_source_selected(self, widget, Source, nodeName):
+		node = self._index.get_source(nodeName, self._languages[0]["id"])
+		sourceWindow = Source(self._player, self._store, node)
 		sourceWindow.window.set_modal(True)
 		sourceWindow.window.set_transient_for(self._window)
 		sourceWindow.window.set_default_size(*self._window.get_size())
@@ -259,8 +255,10 @@ gobject.type_register(SourceSelector)
 
 class RadioWindow(BasicWindow):
 
-	def __init__(self, player, store, index, languageId):
-		BasicWindow.__init__(self, player, store, index)
+	def __init__(self, player, store, node):
+		BasicWindow.__init__(self, player, store)
+		self._node = node
+		self._childNode = None
 
 		self._player.connect("state-change", self._on_player_state_change)
 		self._player.connect("title-change", self._on_player_title_change)
@@ -340,8 +338,7 @@ class RadioWindow(BasicWindow):
 	def _refresh(self):
 		self._show_loading()
 		self._programmingModel.clear()
-		self._index.download(
-			"get_radio_channels",
+		self._node.get_children(
 			self._on_channels,
 			self._on_load_error,
 		)
@@ -423,16 +420,14 @@ class RadioWindow(BasicWindow):
 			_moduleLogger.info("Download complete but window destroyed")
 			return
 
-		channels = list(channels)
+		channels = channels
 		if 1 < len(channels):
 			_moduleLogger.warning("More channels now available!")
-		channel = channels[0]
-		self._index.download(
-			"get_radio_channel_programming",
+		self._childNode = channels[0]
+		self._childNode.get_programming(
+			self._dateShown,
 			self._on_channel,
 			self._on_load_error,
-			channel["id"],
-			self._dateShown,
 		)
 
 	@misc_utils.log_exception(_moduleLogger)
@@ -453,7 +448,7 @@ class RadioWindow(BasicWindow):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_load_error(self, exception):
 		self._hide_loading()
-		self._errorBanner.push_message(exception)
+		self._errorBanner.push_message(str(exception))
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_row_changed(self, selection):
@@ -472,8 +467,9 @@ gobject.type_register(RadioWindow)
 
 class ListWindow(BasicWindow):
 
-	def __init__(self, player, store, index):
-		BasicWindow.__init__(self, player, store, index)
+	def __init__(self, player, store, node):
+		BasicWindow.__init__(self, player, store)
+		self._node = node
 
 		self._loadingBanner = banners.GenericBanner()
 
@@ -542,15 +538,13 @@ class ListWindow(BasicWindow):
 
 class ConferencesWindow(ListWindow):
 
-	def __init__(self, player, store, index, languageId):
-		self._languageId = languageId
-
-		ListWindow.__init__(self, player, store, index)
+	def __init__(self, player, store, node):
+		ListWindow.__init__(self, player, store, node)
 		self._window.set_title("Conferences")
 
 	@classmethod
 	def _get_columns(cls):
-		yield gobject.TYPE_STRING, None
+		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Date")
@@ -570,11 +564,9 @@ class ConferencesWindow(ListWindow):
 
 	def _refresh(self):
 		ListWindow._refresh(self)
-		self._index.download(
-			"get_conferences",
+		self._node.get_children(
 			self._on_conferences,
 			self._on_error,
-			self._languageId,
 		)
 
 	@misc_utils.log_exception(_moduleLogger)
@@ -584,8 +576,9 @@ class ConferencesWindow(ListWindow):
 			return
 
 		self._hide_loading()
-		for program in programs:
-			row = program["id"], program["title"], program["full_title"]
+		for programNode in programs:
+			program = programNode.get_properties()
+			row = programNode, program["title"], program["full_title"]
 			self._model.append(row)
 
 		path = (self._get_current_row(), )
@@ -595,14 +588,14 @@ class ConferencesWindow(ListWindow):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
 		self._hide_loading()
-		self._errorBanner.push_message(exception)
+		self._errorBanner.push_message(str(exception))
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_row_activated(self, view, path, column):
 		itr = self._model.get_iter(path)
-		conferenceId = self._model.get_value(itr, 0)
+		node = self._model.get_value(itr, 0)
 
-		sessionsWindow = ConferenceSessionsWindow(self._player, self._store, self._index, conferenceId)
+		sessionsWindow = ConferenceSessionsWindow(self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
@@ -616,15 +609,13 @@ gobject.type_register(ConferencesWindow)
 
 class ConferenceSessionsWindow(ListWindow):
 
-	def __init__(self, player, store, index, conferenceId):
-		self._conferenceId = conferenceId
-
-		ListWindow.__init__(self, player, store, index)
+	def __init__(self, player, store, node):
+		ListWindow.__init__(self, player, store, node)
 		self._window.set_title("Sessions")
 
 	@classmethod
 	def _get_columns(cls):
-		yield gobject.TYPE_STRING, None
+		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Session")
@@ -638,11 +629,9 @@ class ConferenceSessionsWindow(ListWindow):
 
 	def _refresh(self):
 		ListWindow._refresh(self)
-		self._index.download(
-			"get_conference_sessions",
+		self._node.get_children(
 			self._on_conference_sessions,
 			self._on_error,
-			self._conferenceId,
 		)
 
 	@misc_utils.log_exception(_moduleLogger)
@@ -652,8 +641,9 @@ class ConferenceSessionsWindow(ListWindow):
 			return
 
 		self._hide_loading()
-		for program in programs:
-			row = program["id"], program["title"]
+		for programNode in programs:
+			program = programNode.get_properties()
+			row = programNode, program["title"]
 			self._model.append(row)
 
 		path = (self._get_current_row(), )
@@ -663,14 +653,14 @@ class ConferenceSessionsWindow(ListWindow):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
 		self._hide_loading()
-		self._errorBanner.push_message(exception)
+		self._errorBanner.push_message(str(exception))
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_row_activated(self, view, path, column):
 		itr = self._model.get_iter(path)
-		sessionId = self._model.get_value(itr, 0)
+		node = self._model.get_value(itr, 0)
 
-		sessionsWindow = ConferenceTalksWindow(self._player, self._store, self._index, sessionId)
+		sessionsWindow = ConferenceTalksWindow(self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
@@ -684,15 +674,13 @@ gobject.type_register(ConferenceSessionsWindow)
 
 class ConferenceTalksWindow(ListWindow):
 
-	def __init__(self, player, store, index, sessionId):
-		self._sessionId = sessionId
-
-		ListWindow.__init__(self, player, store, index)
+	def __init__(self, player, store, node):
+		ListWindow.__init__(self, player, store, node)
 		self._window.set_title("Talks")
 
 	@classmethod
 	def _get_columns(cls):
-		yield gobject.TYPE_STRING, None
+		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Talk")
@@ -706,11 +694,9 @@ class ConferenceTalksWindow(ListWindow):
 
 	def _refresh(self):
 		ListWindow._refresh(self)
-		self._index.download(
-			"get_conference_talks",
+		self._node.get_children(
 			self._on_conference_talks,
 			self._on_error,
-			self._sessionId,
 		)
 
 	@misc_utils.log_exception(_moduleLogger)
@@ -720,8 +706,9 @@ class ConferenceTalksWindow(ListWindow):
 			return
 
 		self._hide_loading()
-		for program in programs:
-			row = program, "%s\n%s" % (program["title"], program["speaker"])
+		for programNode in programs:
+			program = programNode.get_properties()
+			row = programNode, "%s\n%s" % (program["title"], program["speaker"])
 			self._model.append(row)
 
 		path = (self._get_current_row(), )
@@ -731,14 +718,14 @@ class ConferenceTalksWindow(ListWindow):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
 		self._hide_loading()
-		self._errorBanner.push_message(exception)
+		self._errorBanner.push_message(str(exception))
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_row_activated(self, view, path, column):
 		itr = self._model.get_iter(path)
-		program = self._model.get_value(itr, 0)
+		node = self._model.get_value(itr, 0)
 
-		sessionsWindow = ConferenceTalkWindow(self._player, self._store, self._index, program)
+		sessionsWindow = ConferenceTalkWindow(self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
@@ -752,8 +739,8 @@ gobject.type_register(ConferenceTalksWindow)
 
 class ConferenceTalkWindow(BasicWindow):
 
-	def __init__(self, player, store, index, talkData):
-		BasicWindow.__init__(self, player, store, index)
+	def __init__(self, player, store, node):
+		BasicWindow.__init__(self, player, store)
 
 		self._player.connect("state-change", self._on_player_state_change)
 		self._player.connect("title-change", self._on_player_title_change)

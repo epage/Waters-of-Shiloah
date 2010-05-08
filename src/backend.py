@@ -31,7 +31,6 @@ class Backend(object):
 
 	def get_radio_channel_programming(self, chanId, date=None):
 		if date is not None:
-			date = date.strftime("%Y-%m-%d")
 			tree = self._get_page_with_validation(
 				action="lds.radio.radiochannels.programming.query",
 				channelID=chanId,
