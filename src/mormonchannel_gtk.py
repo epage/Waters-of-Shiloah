@@ -59,6 +59,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 			self._sourceSelector = windows.SourceSelector(self._player, self._store, self._index)
 			self._sourceSelector.window.connect("destroy", self._on_destroy)
+			self._sourceSelector.show()
 			self._load_settings()
 		except:
 			self._index.stop()

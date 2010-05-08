@@ -73,6 +73,9 @@ class BasicWindow(gobject.GObject):
 	def window(self):
 		return self._window
 
+	def show(self):
+		self._window.show_all()
+
 	def save_settings(self, config, sectionName):
 		config.add_section(sectionName)
 		config.set(sectionName, "fullscreen", str(self._windowInFullscreen))
@@ -190,7 +193,10 @@ class SourceSelector(BasicWindow):
 		self._layout.pack_start(self._playcontrol.toplevel, False, True)
 
 		self._window.set_title(constants.__pretty_app_name__)
-		self._window.show_all()
+
+	def show(self):
+		BasicWindow.show(self)
+
 		self._errorBanner.toplevel.hide()
 		self._playcontrol.toplevel.hide()
 
@@ -245,6 +251,7 @@ class SourceSelector(BasicWindow):
 		sourceWindow.window.set_transient_for(self._window)
 		sourceWindow.window.set_default_size(*self._window.get_size())
 		sourceWindow.connect("quit", self._on_quit)
+		sourceWindow.show()
 
 
 gobject.type_register(SourceSelector)
@@ -312,11 +319,14 @@ class RadioWindow(BasicWindow):
 		self._layout.pack_start(self._radioLayout, True, True)
 
 		self._window.set_title("Radio")
-		self._window.show_all()
+		self._dateShown = datetime.datetime.now()
+
+	def show(self):
+		BasicWindow.show(self)
+
 		self._errorBanner.toplevel.hide()
 		self._loadingBanner.toplevel.hide()
 
-		self._dateShown = datetime.datetime.now()
 		self._refresh()
 
 	def _show_loading(self):
@@ -492,7 +502,9 @@ class ListWindow(BasicWindow):
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._contentLayout, True, True)
 
-		self._window.show_all()
+	def show(self):
+		BasicWindow.show(self)
+
 		self._errorBanner.toplevel.hide()
 		self._loadingBanner.toplevel.hide()
 
@@ -596,6 +608,7 @@ class ConferencesWindow(ListWindow):
 		sessionsWindow.window.set_default_size(*self._window.get_size())
 		sessionsWindow.connect("quit", self._on_quit)
 		sessionsWindow.connect("home", self._on_home)
+		sessionsWindow.show()
 
 
 gobject.type_register(ConferencesWindow)
@@ -663,6 +676,7 @@ class ConferenceSessionsWindow(ListWindow):
 		sessionsWindow.window.set_default_size(*self._window.get_size())
 		sessionsWindow.connect("quit", self._on_quit)
 		sessionsWindow.connect("home", self._on_home)
+		sessionsWindow.show()
 
 
 gobject.type_register(ConferenceSessionsWindow)
@@ -730,6 +744,7 @@ class ConferenceTalksWindow(ListWindow):
 		sessionsWindow.window.set_default_size(*self._window.get_size())
 		sessionsWindow.connect("quit", self._on_quit)
 		sessionsWindow.connect("home", self._on_home)
+		sessionsWindow.show()
 
 
 gobject.type_register(ConferenceTalksWindow)
@@ -755,6 +770,9 @@ class ConferenceTalkWindow(BasicWindow):
 		self._layout.pack_start(self._presenterNavigation.toplevel, True, True)
 
 		self._window.set_title("Talk")
+
+	def show(self):
+		BasicWindow.show(self)
 		self._window.show_all()
 		self._errorBanner.toplevel.hide()
 		self._loadingBanner.toplevel.hide()
