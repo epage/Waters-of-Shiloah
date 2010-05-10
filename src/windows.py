@@ -765,7 +765,7 @@ class ConferenceTalkWindow(BasicWindow):
 		self._loadingBanner.toplevel.hide()
 
 		self._presenter.set_context(
-			self._store.STORE_LOOKUP[self._player.background],
+			self._store.STORE_LOOKUP["conference_background"],
 			self._player.title,
 			self._player.subtitle,
 		)
@@ -798,7 +798,7 @@ class ConferenceTalkWindow(BasicWindow):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_title_change(self, player, newState):
 		self._presenter.set_context(
-			self._store.STORE_LOOKUP[self._player.background],
+			self._store.STORE_LOOKUP["conference_background"],
 			self._player.title,
 			self._player.subtitle,
 		)

@@ -188,6 +188,18 @@ class LeafNode(Node):
 	def is_leaf(self):
 		return True
 
+	@property
+	def can_navigate(self):
+		raise NotImplementedError("On %s" % type(self))
+
+	@property
+	def title(self):
+		raise NotImplementedError("On %s" % type(self))
+
+	@property
+	def subtitle(self):
+		raise NotImplementedError("On %s" % type(self))
+
 	def _get_children(self, on_success, on_error):
 		raise RuntimeError("Not is a leaf")
 
@@ -210,6 +222,18 @@ class RadioChannelNode(LeafNode):
 		LeafNode.__init__(self, connection, parent, data)
 		self._extendedData = {}
 		self._request = None
+
+	@property
+	def can_navigate(self):
+		return False
+
+	@property
+	def title(self):
+		return "Radio"
+
+	@property
+	def subtitle(self):
+		return ""
 
 	def get_programming(self, date, on_success, on_error):
 		date = date.strftime("%Y-%m-%d")
@@ -298,3 +322,15 @@ class TalkNode(LeafNode):
 
 	def __init__(self, connection, parent, data):
 		LeafNode.__init__(self, connection, parent, data)
+
+	@property
+	def can_navigate(self):
+		return True
+
+	@property
+	def title(self):
+		return self._date["title"]
+
+	@property
+	def subtitle(self):
+		return self._date["speaker"]

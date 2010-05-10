@@ -40,7 +40,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 		super(MormonChannelProgram, self).__init__()
 		self._store = imagestore.ImageStore("../data", "../data")
 		self._index = index.AudioIndex()
-		self._player = player.Player()
+		self._player = player.Player(self._index)
 
 		self._index.start()
 		try:

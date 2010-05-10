@@ -19,7 +19,7 @@ class PlayControl(object):
 
 		self._player = player
 		self._player.connect("state-change", self._on_player_state_change)
-		self._player.connect("navigate-change", self._on_player_nav_change)
+		self._player.connect("title-change", self._on_player_nav_change)
 
 		img = store.get_image_from_store(store.STORE_LOOKUP["prev"])
 		self._back = gtk.Button()
@@ -132,8 +132,8 @@ class PlayControl(object):
 		self._set_state(newState)
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_nav_change(self, player, canNavigate):
-		self._set_navigate(canNavigate)
+	def _on_player_nav_change(self, player, newState):
+		self._set_navigate(player.can_navigate)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_back_clicked(self, *args):
