@@ -57,6 +57,10 @@ class FakePlayer(gobject.GObject):
 		return self._layout
 
 	@property
+	def node(self):
+		return None
+
+	@property
 	def title(self):
 		return self._title.get_text()
 

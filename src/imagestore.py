@@ -13,6 +13,14 @@ class ImageStore(object):
 		"play": "play.png",
 		"stop": "stop.png",
 		"home": "home.png",
+
+		"small_next": "small_next.png",
+		"small_prev": "small_prev.png",
+		"small_pause": "small_pause.png",
+		"small_play": "small_play.png",
+		"small_stop": "small_stop.png",
+		"small_home": "small_home.png",
+
 		"loading": "loading.gif",
 
 		"radio_header": "radio_header.png",

@@ -35,6 +35,10 @@ class Player(gobject.GObject):
 		self.emit("title_change", self._state)
 
 	@property
+	def node(self):
+		return self._node
+
+	@property
 	def title(self):
 		if self._node is None:
 			return ""

@@ -1,13 +1,154 @@
 import logging
 
+import gobject
 import gtk
 
 import gtk_toolbox
 import hildonize
 import util.misc as misc_utils
 
+import presenter
+
 
 _moduleLogger = logging.getLogger(__name__)
+
+
+class NavControl(gobject.GObject):
+
+
+	__gsignals__ = {
+		'home' : (
+			gobject.SIGNAL_RUN_LAST,
+			gobject.TYPE_NONE,
+			(),
+		),
+		'jump-to' : (
+			gobject.SIGNAL_RUN_LAST,
+			gobject.TYPE_NONE,
+			(gobject.TYPE_PYOBJECT, ),
+		),
+	}
+
+	def __init__(self, player, store):
+		gobject.GObject.__init__(self)
+
+		self._store = store
+
+		self._player = player
+		self._player.connect("state-change", self._on_player_state_change)
+		self._player.connect("title-change", self._on_player_title_change)
+
+		self._controlButton = store.get_image_from_store(store.STORE_LOOKUP["small_play"])
+
+		self._controlBox = presenter.NavigationBox()
+		self._controlBox.toplevel.add(self._controlButton)
+		self._controlBox.connect("action", self._on_nav_action)
+		self._controlBox.connect("navigating", self._on_navigating)
+
+		self._titleButton = gtk.Label("")
+
+		self._displayBox = presenter.NavigationBox()
+		self._displayBox.toplevel.add(self._titleButton)
+		self._displayBox.connect("action", self._on_nav_action)
+		self._displayBox.connect("navigating", self._on_navigating)
+
+		self._layout = gtk.HBox()
+		self._layout.pack_start(self._controlBox.toplevel, False, False)
+		self._layout.pack_start(self._displayBox.toplevel, False, True)
+
+	def refresh(self):
+		if not self._player.title:
+			self.toplevel.hide()
+
+	@property
+	def toplevel(self):
+		return self._layout
+
+	def set_orientation(self, orientation):
+		pass
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_state_change(self, player, newState):
+		if self._controlBox.is_active() or self._displayBox.is_active():
+			return
+
+		if newState == "play":
+			stateImage = self._store.STORE_LOOKUP["small_play"]
+			self._store.set_image_from_store(self._controlButton, stateImage)
+			self.toplevel.show()
+		elif newState == "pause":
+			stateImage = self._store.STORE_LOOKUP["small_pause"]
+			self._store.set_image_from_store(self._controlButton, stateImage)
+			self.toplevel.show()
+		elif newState == "stop":
+			self._titleButton.set_label("")
+			self.toplevel.hide()
+		else:
+			_moduleLogger.info("Unhandled player state %s" % newState)
+			stateImage = self._store.STORE_LOOKUP["small_pause"]
+			self._store.set_image_from_store(self._controlButton, stateImage)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_title_change(self, player, newState):
+		self._titleButton.set_label(self._player.title)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_navigating(self, widget, navState):
+		if navState == "down":
+			imageName = "small_home"
+		elif navState == "up":
+			imageName = "small_play"
+		elif navState == "clicking" or not self._player.can_navigate:
+			if widget is self._controlBox:
+				if self._player.state == "play":
+					imageName = "small_pause"
+				else:
+					imageName = "small_play"
+			elif widget is self._displayBox:
+				if self._player.state == "play":
+					imageName = "small_play"
+				else:
+					imageName = "small_pause"
+			else:
+				raise NotImplementedError()
+		elif navState == "left":
+			imageName = "small_next"
+		elif navState == "right":
+			imageName = "small_prev"
+
+		imagePath = self._store.STORE_LOOKUP[imageName]
+		self._store.set_image_from_store(self._controlButton, imagePath)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_nav_action(self, widget, navState):
+		if self._player.state == "play":
+			imageName = "small_play"
+		else:
+			imageName = "small_pause"
+		imagePath = self._store.STORE_LOOKUP[imageName]
+		self._store.set_image_from_store(self._controlButton, imagePath)
+
+		if navState == "clicking":
+			if widget is self._controlBox:
+				if self._player.state == "play":
+					self._player.pause()
+				else:
+					self._player.play()
+			elif widget is self._displayBox:
+				self.emit("jump-to", self._player.node)
+			else:
+				raise NotImplementedError()
+		elif navState == "down":
+			self.emit("home")
+		elif navState == "up":
+			pass
+		elif navState == "left":
+			self._player.next()
+		elif navState == "right":
+			self._player.back()
+
+
+gobject.type_register(NavControl)
 
 
 class PlayControl(object):
@@ -21,27 +162,27 @@ class PlayControl(object):
 		self._player.connect("state-change", self._on_player_state_change)
 		self._player.connect("title-change", self._on_player_nav_change)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["prev"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["small_prev"])
 		self._back = gtk.Button()
 		self._back.set_image(img)
 		self._back.connect("clicked", self._on_back_clicked)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["stop"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["small_stop"])
 		self._stop = gtk.Button()
 		self._stop.set_image(img)
 		self._stop.connect("clicked", self._on_stop_clicked)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["pause"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["small_pause"])
 		self._pause = gtk.Button()
 		self._pause.set_image(img)
 		self._pause.connect("clicked", self._on_pause_clicked)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["play"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["small_play"])
 		self._play = gtk.Button()
 		self._play.set_image(img)
 		self._play.connect("clicked", self._on_play_clicked)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["next"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["small_next"])
 		self._next = gtk.Button()
 		self._next.set_image(img)
 		self._next.connect("clicked", self._on_next_clicked)
