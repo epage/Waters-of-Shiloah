@@ -30,4 +30,6 @@ if __name__ == "__main__":
 	window.connect("destroy", lambda w: gtk.main_quit())
 	window.show_all()
 
+	sp.refresh()
+
 	gtk.main()

@@ -50,7 +50,7 @@ class FakePlayer(gobject.GObject):
 		self._layout.pack_start(self._stopButton)
 		self._layout.pack_start(self._canNavigate)
 
-		self._state = "play"
+		self._state = "stop"
 
 	@property
 	def toplevel(self):
@@ -69,13 +69,16 @@ class FakePlayer(gobject.GObject):
 		return self._state
 
 	def _state_change(self, widget, state):
+		_moduleLogger.info("User changed state")
 		self.emit("state_change", state)
 		self._state = state
 
 	def _navigate_change(self, widget):
+		_moduleLogger.info("User changed nav")
 		self.emit("navigate_change", self._canNavigate.get_active())
 
 	def _title_change(self, widget):
+		_moduleLogger.info("User changed title")
 		self.emit("title_change", self._title.get_text())
 
 	def play(self):

@@ -120,12 +120,15 @@ class PlayControl(object):
 		if newState == "play":
 			self._pause.show()
 			self._play.hide()
+			self.toplevel.show()
 		elif newState == "pause":
 			self._pause.hide()
 			self._play.show()
+			self.toplevel.show()
 		elif newState == "stop":
 			self._pause.hide()
 			self._play.show()
+			self.toplevel.hide()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_state_change(self, player, newState):
