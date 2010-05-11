@@ -32,6 +32,11 @@ class BasicWindow(gobject.GObject):
 			gobject.TYPE_NONE,
 			(),
 		),
+		'jump-to' : (
+			gobject.SIGNAL_RUN_LAST,
+			gobject.TYPE_NONE,
+			(gobject.TYPE_PYOBJECT, ),
+		),
 		'rotate' : (
 			gobject.SIGNAL_RUN_LAST,
 			gobject.TYPE_NONE,
@@ -144,6 +149,12 @@ class BasicWindow(gobject.GObject):
 		self._window.destroy()
 
 	@misc_utils.log_exception(_moduleLogger)
+	def _on_jump(self, source, node):
+		_moduleLogger.error("Jump is not implemented")
+		self.emit("jump-to", node)
+		self._window.destroy()
+
+	@misc_utils.log_exception(_moduleLogger)
 	def _on_quit(self, *args):
 		self.emit("quit")
 		self._window.destroy()
@@ -185,7 +196,7 @@ class SourceSelector(BasicWindow):
 		self._buttonLayout.pack_start(self._magazineWrapper, True, True)
 		self._buttonLayout.pack_start(self._scriptureWrapper, True, True)
 
-		self._playcontrol = playcontrol.PlayControl(player, store)
+		self._playcontrol = playcontrol.NavControl(player, store)
 
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._buttonLayout, True, True)
@@ -489,7 +500,9 @@ class ListWindow(BasicWindow):
 		self._treeScroller.add(self._treeView)
 		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
 
-		self._playcontrol = playcontrol.PlayControl(self._player, self._store)
+		self._playcontrol = playcontrol.NavControl(self._player, self._store)
+		self._playcontrol.connect("home", self._on_home)
+		self._playcontrol.connect("jump-to", self._on_jump)
 
 		self._contentLayout = gtk.VBox(False)
 		self._contentLayout.pack_start(self._treeScroller, True, True)
@@ -784,7 +797,7 @@ class ConferenceTalkWindow(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_state_change(self, player, newState):
-		if self._headerNavigation.is_active() or self._presenterNavigation.is_active():
+		if self._presenterNavigation.is_active():
 			return
 
 		if newState == "play":

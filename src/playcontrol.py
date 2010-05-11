@@ -54,7 +54,7 @@ class NavControl(gobject.GObject):
 
 		self._layout = gtk.HBox()
 		self._layout.pack_start(self._controlBox.toplevel, False, False)
-		self._layout.pack_start(self._displayBox.toplevel, False, True)
+		self._layout.pack_start(self._displayBox.toplevel, True, True)
 
 	def refresh(self):
 		if not self._player.title:
