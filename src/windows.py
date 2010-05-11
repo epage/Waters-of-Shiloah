@@ -500,12 +500,14 @@ class ListWindow(BasicWindow):
 		self._treeScroller.add(self._treeView)
 		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
 
+		self._separator = gtk.HSeparator()
 		self._playcontrol = playcontrol.NavControl(self._player, self._store)
 		self._playcontrol.connect("home", self._on_home)
 		self._playcontrol.connect("jump-to", self._on_jump)
 
 		self._contentLayout = gtk.VBox(False)
 		self._contentLayout.pack_start(self._treeScroller, True, True)
+		self._contentLayout.pack_start(self._separator, False, True)
 		self._contentLayout.pack_start(self._playcontrol.toplevel, False, True)
 
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
