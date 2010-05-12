@@ -2,9 +2,14 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo Reverse order option.  Toggle between playing ascending/descending chronological order
-@todo Track recent
+@todo Switch presenters to show Play when not active rather than Stop
+@todo Implement Jump TO
+@todo Implement highlighting of current track
+@todo Restructure so there is a windows/ folder with a file per source
+@todo Add additional sources
 @bug All connect's need disconnects or else we will leak a bunch of objects
+@todo Track recent
+@todo Reverse order option.  Toggle between playing ascending/descending chronological order
 """
 
 from __future__ import with_statement
