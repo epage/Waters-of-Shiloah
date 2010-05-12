@@ -476,9 +476,14 @@ class RadioWindow(BasicWindow):
 			row = program["time"], program["title"]
 			self._programmingModel.append(row)
 
-		path = (self._get_current_row(), )
-		self._treeView.scroll_to_cell(path)
-		self._treeView.get_selection().select_path(path)
+		currentDate = datetime.datetime.now()
+		if currentDate.date() != self._dateShown.date():
+			self._treeView.get_selection().set_mode(gtk.SELECTION_NONE)
+		else:
+			self._treeView.get_selection().set_mode(gtk.SELECTION_SINGLE)
+			path = (self._get_current_row(), )
+			self._treeView.scroll_to_cell(path)
+			self._treeView.get_selection().select_path(path)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_load_error(self, exception):
