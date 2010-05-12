@@ -99,9 +99,9 @@ class NavigationBox(gobject.GObject):
 			mousePosition = event.get_coords()
 			state = self.get_state(mousePosition)
 			assert state
-			self.emit("action", state)
 		finally:
 			self._clickPosition = self._NO_POSITION
+		self.emit("action", state)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_motion_notify(self, widget, event):

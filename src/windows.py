@@ -310,10 +310,6 @@ class RadioWindow(BasicWindow):
 		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
 
 		self._presenter = presenter.StreamMiniPresenter(self._store)
-		if self._player.state == "play":
-			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
-		else:
-			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
 		self._presenterNavigation = presenter.NavigationBox()
 		self._presenterNavigation.toplevel.add(self._presenter.toplevel)
 		self._presenterNavigation.connect("action", self._on_nav_action)
@@ -327,7 +323,7 @@ class RadioWindow(BasicWindow):
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._radioLayout, True, True)
 
-		self._window.set_title("Radio")
+		self._window.set_title(self._node.title)
 		self._dateShown = datetime.datetime.now()
 
 	def show(self):
@@ -337,6 +333,24 @@ class RadioWindow(BasicWindow):
 		self._loadingBanner.toplevel.hide()
 
 		self._refresh()
+
+	@property
+	def _active(self):
+		return self._player.node is self._childNode
+
+	def _set_context(self, state):
+		if state == self._player.STATE_PLAY:
+			if self._active:
+				self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+			else:
+				self._presenter.set_state(self._store.STORE_LOOKUP["stop"])
+		elif state == self._player.STATE_PAUSE:
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		elif state == self._player.STATE_STOP:
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		else:
+			_moduleLogger.info("Unhandled player state %s" % state)
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
 
 	def _show_loading(self):
 		animationPath = self._store.STORE_LOOKUP["loading"]
@@ -353,6 +367,7 @@ class RadioWindow(BasicWindow):
 			self._on_channels,
 			self._on_load_error,
 		)
+		self._set_context(self._player.state)
 
 	def _get_current_row(self):
 		nowTime = self._dateShown.strftime("%H:%M:%S")
@@ -371,26 +386,29 @@ class RadioWindow(BasicWindow):
 		if self._headerNavigation.is_active() or self._presenterNavigation.is_active():
 			return
 
-		if newState == "play":
-			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
-		elif newState == "pause":
-			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
-		else:
-			_moduleLogger.info("Unhandled player state %s" % newState)
-			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+		self._set_context(newState)
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_title_change(self, player, newState):
-		_moduleLogger.info("Player title magically changed to %s" % player.title)
-		self._destroy()
+	def _on_player_title_change(self, player, node):
+		if node is not self._childNode or node is None:
+			_moduleLogger.info("Player title magically changed to %s" % player.title)
+			return
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_navigating(self, widget, navState):
 		if navState == "clicking":
-			if self._player.state == "play":
-				imageName = "pause"
+			if self._player.state == self._player.STATE_PLAY:
+				if self._active:
+					imageName = "pause"
+				else:
+					imageName = "stop"
+			elif self._player.state == self._player.STATE_PAUSE:
+				imageName = "play"
+			elif self._player.state == self._player.STATE_STOP:
+				imageName = "play"
 			else:
 				imageName = "play"
+				_moduleLogger.info("Unhandled player state %s" % self._player.state)
 		elif navState == "down":
 			imageName = "home"
 		elif navState == "up":
@@ -404,16 +422,21 @@ class RadioWindow(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_nav_action(self, widget, navState):
-		if self._player.state == "play":
-			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
-		else:
-			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+		self._set_context(self._player.state)
 
 		if navState == "clicking":
-			if self._player.state == "play":
-				self._player.pause()
-			else:
+			if self._player.state == self._player.STATE_PLAY:
+				if self._active:
+					self._player.pause()
+				else:
+					self._player.stop()
+			elif self._player.state == self._player.STATE_PAUSE:
 				self._player.play()
+			elif self._player.state == self._player.STATE_STOP:
+				self._player.set_piece_by_node(self._childNode)
+				self._player.play()
+			else:
+				_moduleLogger.info("Unhandled player state %s" % self._player.state)
 		elif navState == "down":
 			self.window.destroy()
 		elif navState == "up":
@@ -555,7 +578,7 @@ class ConferencesWindow(ListWindow):
 
 	def __init__(self, player, store, node):
 		ListWindow.__init__(self, player, store, node)
-		self._window.set_title("Conferences")
+		self._window.set_title(self._node.title)
 
 	@classmethod
 	def _get_columns(cls):
@@ -626,7 +649,7 @@ class ConferenceSessionsWindow(ListWindow):
 
 	def __init__(self, player, store, node):
 		ListWindow.__init__(self, player, store, node)
-		self._window.set_title("Sessions")
+		self._window.set_title(self._node.title)
 
 	@classmethod
 	def _get_columns(cls):
@@ -691,7 +714,7 @@ class ConferenceTalksWindow(ListWindow):
 
 	def __init__(self, player, store, node):
 		ListWindow.__init__(self, player, store, node)
-		self._window.set_title("Talks")
+		self._window.set_title(self._node.title)
 
 	@classmethod
 	def _get_columns(cls):
@@ -756,9 +779,11 @@ class ConferenceTalkWindow(BasicWindow):
 
 	def __init__(self, player, store, node):
 		BasicWindow.__init__(self, player, store)
+		self._node = node
 
 		self._player.connect("state-change", self._on_player_state_change)
 		self._player.connect("title-change", self._on_player_title_change)
+		self._player.connect("error", self._on_player_error)
 
 		self._loadingBanner = banners.GenericBanner()
 
@@ -771,7 +796,7 @@ class ConferenceTalkWindow(BasicWindow):
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._presenterNavigation.toplevel, True, True)
 
-		self._window.set_title("Talk")
+		self._window.set_title(self._node.title)
 
 	def show(self):
 		BasicWindow.show(self)
@@ -784,10 +809,11 @@ class ConferenceTalkWindow(BasicWindow):
 			self._player.title,
 			self._player.subtitle,
 		)
-		if self._player.state == "play":
-			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
-		else:
-			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+		self._set_context(self._player.state)
+
+	@property
+	def _active(self):
+		return self._player.node is self._node
 
 	def _show_loading(self):
 		animationPath = self._store.STORE_LOOKUP["loading"]
@@ -797,21 +823,31 @@ class ConferenceTalkWindow(BasicWindow):
 	def _hide_loading(self):
 		self._loadingBanner.hide()
 
+	def _set_context(self, state):
+		if state == self._player.STATE_PLAY:
+			if self._active:
+				self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+			else:
+				self._presenter.set_state(self._store.STORE_LOOKUP["stop"])
+		elif state == self._player.STATE_PAUSE:
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		elif state == self._player.STATE_STOP:
+			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
+		else:
+			_moduleLogger.info("Unhandled player state %s" % state)
+
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_state_change(self, player, newState):
 		if self._presenterNavigation.is_active():
 			return
 
-		if newState == "play":
-			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
-		elif newState == "pause":
-			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
-		else:
-			_moduleLogger.info("Unhandled player state %s" % newState)
-			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+		self._set_context(newState)
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_title_change(self, player, newState):
+	def _on_player_title_change(self, player, node):
+		if node is not self._node or node is None:
+			_moduleLogger.info("Player title magically changed to %s" % player.title)
+			return
 		self._presenter.set_context(
 			self._store.STORE_LOOKUP["conference_background"],
 			self._player.title,
@@ -819,12 +855,23 @@ class ConferenceTalkWindow(BasicWindow):
 		)
 
 	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_error(self, player, err, debug):
+		_moduleLogger.error("%r - %r" % (err, debug))
+
+	@misc_utils.log_exception(_moduleLogger)
 	def _on_navigating(self, widget, navState):
 		if navState == "clicking":
-			if self._player.state == "play":
-				imageName = "pause"
-			else:
+			if self._player.state == self._player.STATE_PLAY:
+				if self._active:
+					imageName = "pause"
+				else:
+					imageName = "stop"
+			elif self._player.state == self._player.STATE_PAUSE:
 				imageName = "play"
+			elif self._player.state == self._player.STATE_STOP:
+				imageName = "play"
+			else:
+				_moduleLogger.info("Unhandled player state %s" % self._player.state)
 		elif navState == "down":
 			imageName = "home"
 		elif navState == "up":
@@ -838,16 +885,21 @@ class ConferenceTalkWindow(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_nav_action(self, widget, navState):
-		if self._player.state == "play":
-			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
-		else:
-			self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
+		self._set_context(self._player.state)
 
 		if navState == "clicking":
-			if self._player.state == "play":
-				self._player.pause()
-			else:
+			if self._player.state == self._player.STATE_PLAY:
+				if self._active:
+					self._player.pause()
+				else:
+					self._player.stop()
+			elif self._player.state == self._player.STATE_PAUSE:
 				self._player.play()
+			elif self._player.state == self._player.STATE_STOP:
+				self._player.set_piece_by_node(self._node)
+				self._player.play()
+			else:
+				_moduleLogger.info("Unhandled player state %s" % self._player.state)
 		elif navState == "down":
 			self.emit("home")
 			self._window.destroy()

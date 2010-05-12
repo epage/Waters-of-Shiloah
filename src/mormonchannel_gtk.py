@@ -4,6 +4,7 @@
 """
 @todo Reverse order option.  Toggle between playing ascending/descending chronological order
 @todo Track recent
+@bug All connect's need disconnects or else we will leak a bunch of objects
 """
 
 from __future__ import with_statement

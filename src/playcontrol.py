@@ -45,7 +45,7 @@ class NavControl(gobject.GObject):
 		self._controlBox.connect("action", self._on_nav_action)
 		self._controlBox.connect("navigating", self._on_navigating)
 
-		self._titleButton = gtk.Label("")
+		self._titleButton = gtk.Label(self._player.title)
 
 		self._displayBox = presenter.NavigationBox()
 		self._displayBox.toplevel.add(self._titleButton)
@@ -57,8 +57,25 @@ class NavControl(gobject.GObject):
 		self._layout.pack_start(self._displayBox.toplevel, True, True)
 
 	def refresh(self):
-		if not self._player.title:
+		self._titleButton.set_label(self._player.title)
+		self._set_context(self._player.state)
+
+	def _set_context(self, state):
+		if state == self._player.STATE_PLAY:
+			stateImage = self._store.STORE_LOOKUP["small_pause"]
+			self._store.set_image_from_store(self._controlButton, stateImage)
+			self.toplevel.show()
+		elif state == self._player.STATE_PAUSE:
+			stateImage = self._store.STORE_LOOKUP["small_play"]
+			self._store.set_image_from_store(self._controlButton, stateImage)
+			self.toplevel.show()
+		elif state == self._player.STATE_STOP:
+			self._titleButton.set_label("")
 			self.toplevel.hide()
+		else:
+			_moduleLogger.info("Unhandled player state %s" % state)
+			stateImage = self._store.STORE_LOOKUP["small_pause"]
+			self._store.set_image_from_store(self._controlButton, stateImage)
 
 	@property
 	def toplevel(self):
@@ -72,45 +89,32 @@ class NavControl(gobject.GObject):
 		if self._controlBox.is_active() or self._displayBox.is_active():
 			return
 
-		if newState == "play":
-			stateImage = self._store.STORE_LOOKUP["small_play"]
-			self._store.set_image_from_store(self._controlButton, stateImage)
-			self.toplevel.show()
-		elif newState == "pause":
-			stateImage = self._store.STORE_LOOKUP["small_pause"]
-			self._store.set_image_from_store(self._controlButton, stateImage)
-			self.toplevel.show()
-		elif newState == "stop":
-			self._titleButton.set_label("")
-			self.toplevel.hide()
-		else:
-			_moduleLogger.info("Unhandled player state %s" % newState)
-			stateImage = self._store.STORE_LOOKUP["small_pause"]
-			self._store.set_image_from_store(self._controlButton, stateImage)
+		self._set_context(newState)
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_title_change(self, player, newState):
+	def _on_player_title_change(self, player, node):
+		_moduleLogger.info("Title change: %s" % self._player.title)
 		self._titleButton.set_label(self._player.title)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_navigating(self, widget, navState):
 		if navState == "down":
 			imageName = "small_home"
-		elif navState == "up":
-			imageName = "small_play"
 		elif navState == "clicking" or not self._player.can_navigate:
 			if widget is self._controlBox:
 				if self._player.state == "play":
-					imageName = "small_pause"
-				else:
 					imageName = "small_play"
+				else:
+					imageName = "small_pause"
 			elif widget is self._displayBox:
-				if self._player.state == "play":
-					imageName = "small_play"
-				else:
+				if self._player.state == self._player.STATE_PLAY:
 					imageName = "small_pause"
+				else:
+					imageName = "small_play"
 			else:
 				raise NotImplementedError()
+		elif navState == "up":
+			imageName = "small_play"
 		elif navState == "left":
 			imageName = "small_next"
 		elif navState == "right":
@@ -121,16 +125,11 @@ class NavControl(gobject.GObject):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_nav_action(self, widget, navState):
-		if self._player.state == "play":
-			imageName = "small_play"
-		else:
-			imageName = "small_pause"
-		imagePath = self._store.STORE_LOOKUP[imageName]
-		self._store.set_image_from_store(self._controlButton, imagePath)
+		self._set_context(self._player.state)
 
 		if navState == "clicking":
 			if widget is self._controlBox:
-				if self._player.state == "play":
+				if self._player.state == self._player.STATE_PLAY:
 					self._player.pause()
 				else:
 					self._player.play()
@@ -276,7 +275,7 @@ class PlayControl(object):
 		self._set_state(newState)
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_nav_change(self, player, newState):
+	def _on_player_nav_change(self, player, node):
 		self._set_navigate(player.can_navigate)
 
 	@misc_utils.log_exception(_moduleLogger)

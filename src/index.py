@@ -120,6 +120,10 @@ class Node(object):
 	def get_properties(self):
 		return self._data
 
+	@property
+	def title(self):
+		raise NotImplementedError("On %s" % type(self))
+
 	def is_leaf(self):
 		raise NotImplementedError("")
 
@@ -193,11 +197,11 @@ class LeafNode(Node):
 		raise NotImplementedError("On %s" % type(self))
 
 	@property
-	def title(self):
+	def subtitle(self):
 		raise NotImplementedError("On %s" % type(self))
 
 	@property
-	def subtitle(self):
+	def uri(self):
 		raise NotImplementedError("On %s" % type(self))
 
 	def _get_children(self, on_success, on_error):
@@ -208,6 +212,10 @@ class RadioNode(ParentNode):
 
 	def __init__(self, connection):
 		ParentNode.__init__(self, connection, None, {})
+
+	@property
+	def title(self):
+		return "Radio"
 
 	def _get_func(self):
 		return "get_radio_channels", (), {}
@@ -234,6 +242,10 @@ class RadioChannelNode(LeafNode):
 	@property
 	def subtitle(self):
 		return ""
+
+	@property
+	def uri(self):
+		return self._data["url"]
 
 	def get_programming(self, date, on_success, on_error):
 		date = date.strftime("%Y-%m-%d")
@@ -287,6 +299,10 @@ class ConferencesNode(ParentNode):
 		ParentNode.__init__(self, connection, None, {})
 		self._langId = langId
 
+	@property
+	def title(self):
+		return "Conferences"
+
 	def _get_func(self):
 		return "get_conferences", (self._langId, ), {}
 
@@ -299,6 +315,10 @@ class ConferenceNode(ParentNode):
 	def __init__(self, connection, parent, data):
 		ParentNode.__init__(self, connection, parent, data)
 
+	@property
+	def title(self):
+		return self._data["title"]
+
 	def _get_func(self):
 		return "get_conference_sessions", (self._data["id"], ), {}
 
@@ -310,6 +330,10 @@ class SessionNode(ParentNode):
 
 	def __init__(self, connection, parent, data):
 		ParentNode.__init__(self, connection, parent, data)
+
+	@property
+	def title(self):
+		return self._data["title"]
 
 	def _get_func(self):
 		return "get_conference_talks", (self._data["id"], ), {}
@@ -329,8 +353,12 @@ class TalkNode(LeafNode):
 
 	@property
 	def title(self):
-		return self._date["title"]
+		return self._data["title"]
 
 	@property
 	def subtitle(self):
-		return self._date["speaker"]
+		return self._data["speaker"]
+
+	@property
+	def uri(self):
+		return self._data["url"]
