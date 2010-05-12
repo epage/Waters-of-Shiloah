@@ -343,7 +343,7 @@ class RadioWindow(BasicWindow):
 			if self._active:
 				self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
 			else:
-				self._presenter.set_state(self._store.STORE_LOOKUP["stop"])
+				self._presenter.set_state(self._store.STORE_LOOKUP["play"])
 		elif state == self._player.STATE_PAUSE:
 			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
 		elif state == self._player.STATE_STOP:
@@ -401,7 +401,7 @@ class RadioWindow(BasicWindow):
 				if self._active:
 					imageName = "pause"
 				else:
-					imageName = "stop"
+					imageName = "play"
 			elif self._player.state == self._player.STATE_PAUSE:
 				imageName = "play"
 			elif self._player.state == self._player.STATE_STOP:
@@ -429,7 +429,8 @@ class RadioWindow(BasicWindow):
 				if self._active:
 					self._player.pause()
 				else:
-					self._player.stop()
+					self._player.set_piece_by_node(self._childNode)
+					self._player.play()
 			elif self._player.state == self._player.STATE_PAUSE:
 				self._player.play()
 			elif self._player.state == self._player.STATE_STOP:
@@ -828,7 +829,7 @@ class ConferenceTalkWindow(BasicWindow):
 			if self._active:
 				self._presenter.set_state(self._store.STORE_LOOKUP["pause"])
 			else:
-				self._presenter.set_state(self._store.STORE_LOOKUP["stop"])
+				self._presenter.set_state(self._store.STORE_LOOKUP["play"])
 		elif state == self._player.STATE_PAUSE:
 			self._presenter.set_state(self._store.STORE_LOOKUP["play"])
 		elif state == self._player.STATE_STOP:
@@ -865,7 +866,7 @@ class ConferenceTalkWindow(BasicWindow):
 				if self._active:
 					imageName = "pause"
 				else:
-					imageName = "stop"
+					imageName = "play"
 			elif self._player.state == self._player.STATE_PAUSE:
 				imageName = "play"
 			elif self._player.state == self._player.STATE_STOP:
@@ -892,7 +893,8 @@ class ConferenceTalkWindow(BasicWindow):
 				if self._active:
 					self._player.pause()
 				else:
-					self._player.stop()
+					self._player.set_piece_by_node(self._node)
+					self._player.play()
 			elif self._player.state == self._player.STATE_PAUSE:
 				self._player.play()
 			elif self._player.state == self._player.STATE_STOP:

@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo Switch presenters to show Play when not active rather than Stop
 @todo Implement Jump TO
 @todo Implement highlighting of current track
 @todo Restructure so there is a windows/ folder with a file per source
