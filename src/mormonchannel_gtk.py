@@ -7,7 +7,6 @@
 @todo Switch home icon color
 @todo Switch from swappping icons on press to the pressed version of icons
 @bug Fix presenter display
-@bug All connect's need disconnects or else we will leak a bunch of objects
 @todo Track recent
 @todo Favorites
 @todo Sequential playback

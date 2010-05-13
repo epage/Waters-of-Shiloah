@@ -10,6 +10,7 @@ import gtk
 import constants
 import hildonize
 import util.misc as misc_utils
+import util.go_utils as go_utils
 
 import stream_index
 import banners
@@ -20,7 +21,7 @@ import presenter
 _moduleLogger = logging.getLogger(__name__)
 
 
-class BasicWindow(gobject.GObject):
+class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 
 	__gsignals__ = {
 		'quit' : (
@@ -66,6 +67,7 @@ class BasicWindow(gobject.GObject):
 		self._layout.pack_start(self._errorBanner.toplevel, False, True)
 
 		self._window = gtk.Window()
+		go_utils.AutoSignal.__init__(self, self.window)
 		self._window.add(self._layout)
 		self._window = hildonize.hildonize_window(self, self._window)
 
@@ -294,8 +296,8 @@ class RadioWindow(BasicWindow):
 		self._node = node
 		self._childNode = None
 
-		self._player.connect("state-change", self._on_player_state_change)
-		self._player.connect("title-change", self._on_player_title_change)
+		self.connect_auto(self._player, "state-change", self._on_player_state_change)
+		self.connect_auto(self._player, "title-change", self._on_player_title_change)
 
 		self._loadingBanner = banners.GenericBanner()
 
@@ -852,9 +854,9 @@ class ConferenceTalkWindow(BasicWindow):
 		BasicWindow.__init__(self, player, store)
 		self._node = node
 
-		self._player.connect("state-change", self._on_player_state_change)
-		self._player.connect("title-change", self._on_player_title_change)
-		self._player.connect("error", self._on_player_error)
+		self.connect_auto(self._player, "state-change", self._on_player_state_change)
+		self.connect_auto(self._player, "title-change", self._on_player_title_change)
+		self.connect_auto(self._player, "error", self._on_player_error)
 
 		self._loadingBanner = banners.GenericBanner()
 

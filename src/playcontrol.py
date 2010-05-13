@@ -5,6 +5,7 @@ import gtk
 
 import gtk_toolbox
 import hildonize
+import util.go_utils as go_utils
 import util.misc as misc_utils
 
 import presenter
@@ -13,7 +14,7 @@ import presenter
 _moduleLogger = logging.getLogger(__name__)
 
 
-class NavControl(gobject.GObject):
+class NavControl(gobject.GObject, go_utils.AutoSignal):
 
 
 	__gsignals__ = {
@@ -34,10 +35,6 @@ class NavControl(gobject.GObject):
 
 		self._store = store
 
-		self._player = player
-		self._player.connect("state-change", self._on_player_state_change)
-		self._player.connect("title-change", self._on_player_title_change)
-
 		self._controlButton = store.get_image_from_store(store.STORE_LOOKUP["small_play"])
 
 		self._controlBox = presenter.NavigationBox()
@@ -45,7 +42,7 @@ class NavControl(gobject.GObject):
 		self._controlBox.connect("action", self._on_nav_action)
 		self._controlBox.connect("navigating", self._on_navigating)
 
-		self._titleButton = gtk.Label(self._player.title)
+		self._titleButton = gtk.Label()
 
 		self._displayBox = presenter.NavigationBox()
 		self._displayBox.toplevel.add(self._titleButton)
@@ -53,8 +50,13 @@ class NavControl(gobject.GObject):
 		self._displayBox.connect("navigating", self._on_navigating)
 
 		self._layout = gtk.HBox()
+		go_utils.AutoSignal.__init__(self, self.toplevel)
 		self._layout.pack_start(self._controlBox.toplevel, False, False)
 		self._layout.pack_start(self._displayBox.toplevel, True, True)
+		self._player = player
+		self.connect_auto(self._player, "state-change", self._on_player_state_change)
+		self.connect_auto(self._player, "title-change", self._on_player_title_change)
+		self._titleButton.set_label(self._player.title)
 
 	def refresh(self):
 		self._titleButton.set_label(self._player.title)

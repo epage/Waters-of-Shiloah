@@ -248,6 +248,23 @@ class AsyncLinearExecution(object):
 			)
 
 
+class AutoSignal(object):
+
+	def __init__(self, toplevel):
+		self.__disconnectPool = []
+		toplevel.connect("destroy", self.__on_destroy)
+
+	def connect_auto(self, widget, *args):
+		id = widget.connect(*args)
+		self.__disconnectPool.append((widget, id))
+
+	@misc.log_exception(_moduleLogger)
+	def __on_destroy(self, widget):
+		for widget, id in self.__disconnectPool:
+			widget.disconnect(id)
+		del self.__disconnectPool[:]
+
+
 def throttled(minDelay, queue):
 	"""
 	Throttle the calls to a function by queueing all the calls that happen
