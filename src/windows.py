@@ -11,6 +11,7 @@ import constants
 import hildonize
 import util.misc as misc_utils
 
+import stream_index
 import banners
 import playcontrol
 import presenter
@@ -100,6 +101,9 @@ class BasicWindow(gobject.GObject):
 		else:
 			self._window.unfullscreen()
 
+	def jump_to(self, node):
+		raise NotImplementedError("On %s" % self)
+
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_destroy(self, *args):
 		self._isDestroyed = True
@@ -150,9 +154,7 @@ class BasicWindow(gobject.GObject):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_jump(self, source, node):
-		_moduleLogger.error("Jump is not implemented")
-		self.emit("jump-to", node)
-		self._window.destroy()
+		raise NotImplementedError("On %s" % self)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_quit(self, *args):
@@ -170,22 +172,22 @@ class SourceSelector(BasicWindow):
 		self._loadingBanner = banners.GenericBanner()
 
 		self._radioButton = self._create_button("radio", "Radio")
-		self._radioButton.connect("clicked", self._on_source_selected, RadioWindow, "radio")
+		self._radioButton.connect("clicked", self._on_source_selected, stream_index.SOURCE_RADIO)
 		self._radioWrapper = gtk.VBox()
 		self._radioWrapper.pack_start(self._radioButton, False, True)
 
 		self._conferenceButton = self._create_button("conferences", "Conferences")
-		self._conferenceButton.connect("clicked", self._on_source_selected, ConferencesWindow, "conferences")
+		self._conferenceButton.connect("clicked", self._on_source_selected, stream_index.SOURCE_CONFERENCES)
 		self._conferenceWrapper = gtk.VBox()
 		self._conferenceWrapper.pack_start(self._conferenceButton, False, True)
 
 		self._magazineButton = self._create_button("magazines", "Magazines")
-		#self._magazineButton.connect("clicked", self._on_source_selected)
+		self._magazineButton.connect("clicked", self._on_source_selected, stream_index.SOURCE_MAGAZINES)
 		self._magazineWrapper = gtk.VBox()
 		self._magazineWrapper.pack_start(self._magazineButton, False, True)
 
 		self._scriptureButton = self._create_button("scriptures", "Scriptures")
-		#self._scriptureButton.connect("clicked", self._on_source_selected)
+		self._scriptureButton.connect("clicked", self._on_source_selected, stream_index.SOURCE_SCRIPTURES)
 		self._scriptureWrapper = gtk.VBox()
 		self._scriptureWrapper.pack_start(self._scriptureButton, False, True)
 
@@ -197,6 +199,7 @@ class SourceSelector(BasicWindow):
 		self._buttonLayout.pack_start(self._scriptureWrapper, True, True)
 
 		self._playcontrol = playcontrol.NavControl(player, store)
+		self._playcontrol.connect("jump-to", self._on_jump)
 
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._buttonLayout, True, True)
@@ -250,15 +253,35 @@ class SourceSelector(BasicWindow):
 		self._hide_loading()
 		self._errorBanner.push_message(str(exception))
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_source_selected(self, widget, Source, nodeName):
-		node = self._index.get_source(nodeName, self._languages[0]["id"])
+	def _window_from_node(self, node):
+		if node.id == stream_index.SOURCE_RADIO:
+			Source = RadioWindow
+		elif node.id == stream_index.SOURCE_CONFERENCES:
+			Source = ConferencesWindow
+		elif node.id == stream_index.SOURCE_MAGAZINES:
+			pass
+		elif node.id == stream_index.SOURCE_SCRIPTURES:
+			pass
 		sourceWindow = Source(self._player, self._store, node)
 		sourceWindow.window.set_modal(True)
 		sourceWindow.window.set_transient_for(self._window)
 		sourceWindow.window.set_default_size(*self._window.get_size())
 		sourceWindow.connect("quit", self._on_quit)
+		sourceWindow.connect("jump-to", self._on_jump)
 		sourceWindow.show()
+		return sourceWindow
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_jump(self, source, node):
+		targetNodePath = list(reversed(list(stream_index.walk_ancestors(node))))
+		ancestor = targetNodePath[0]
+		window = self._window_from_node(ancestor)
+		window.jump_to(node)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_source_selected(self, widget, nodeName):
+		node = self._index.get_source(nodeName, self._languages[0]["id"])
+		self._window_from_node(node)
 
 
 gobject.type_register(SourceSelector)
@@ -333,6 +356,9 @@ class RadioWindow(BasicWindow):
 		self._loadingBanner.toplevel.hide()
 
 		self._refresh()
+
+	def jump_to(self, node):
+		_moduleLogger.info("Only 1 channel, nothing to jump to")
 
 	@property
 	def _active(self):
@@ -556,11 +582,50 @@ class ListWindow(BasicWindow):
 		raise NotImplementedError("")
 
 	def _get_current_row(self):
+		if self._player.node is None:
+			return -1
+		ancestors, current, descendants = stream_index.common_paths(self._player.node, self._node)
+		if not descendants:
+			return -1
+		activeChild = descendants[0]
+		for i, row in enumerate(self._model):
+			if activeChild is row[0]:
+				return i
+		else:
+			return -1
+
+	def jump_to(self, node):
+		ancestors, current, descendants = stream_index.common_paths(node, self._node)
+		if current is None:
+			raise RuntimeError("Cannot jump to node %s" % node)
+		if not descendants:
+			_moduleLogger.info("Current node is the target")
+			return
+		child = descendants[0]
+		window = self._window_from_node(child)
+		window.jump_to(node)
+
+	def _window_from_node(self, node):
 		raise NotImplementedError("")
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_row_activated(self, view, path, column):
 		raise NotImplementedError("")
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_jump(self, source, node):
+		ancestors, current, descendants = stream_index.common_paths(node, self._node)
+		if current is None:
+			_moduleLogger.info("%s is not the target, moving up" % self._node)
+			self.emit("jump-to", node)
+			self._window.destroy()
+			return
+		if not descendants:
+			_moduleLogger.info("Current node is the target")
+			return
+		child = descendants[0]
+		window = self._window_from_node(child)
+		window.jump_to(node)
 
 	def _show_loading(self):
 		animationPath = self._store.STORE_LOOKUP["loading"]
@@ -602,10 +667,6 @@ class ConferencesWindow(ListWindow):
 		column.add_attribute(textrenderer, "text", 2)
 		yield gobject.TYPE_STRING, column
 
-	def _get_current_row(self):
-		# @todo Not implemented yet
-		return 0
-
 	def _refresh(self):
 		ListWindow._refresh(self)
 		self._node.get_children(
@@ -634,18 +695,22 @@ class ConferencesWindow(ListWindow):
 		self._hide_loading()
 		self._errorBanner.push_message(str(exception))
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-
+	def _window_from_node(self, node):
 		sessionsWindow = ConferenceSessionsWindow(self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
 		sessionsWindow.connect("quit", self._on_quit)
 		sessionsWindow.connect("home", self._on_home)
+		sessionsWindow.connect("jump-to", self._on_jump)
 		sessionsWindow.show()
+		return sessionsWindow
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_row_activated(self, view, path, column):
+		itr = self._model.get_iter(path)
+		node = self._model.get_value(itr, 0)
+		self._window_from_node(node)
 
 
 gobject.type_register(ConferencesWindow)
@@ -666,10 +731,6 @@ class ConferenceSessionsWindow(ListWindow):
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 1)
 		yield gobject.TYPE_STRING, column
-
-	def _get_current_row(self):
-		# @todo Not implemented yet
-		return 0
 
 	def _refresh(self):
 		ListWindow._refresh(self)
@@ -699,18 +760,22 @@ class ConferenceSessionsWindow(ListWindow):
 		self._hide_loading()
 		self._errorBanner.push_message(str(exception))
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-
+	def _window_from_node(self, node):
 		sessionsWindow = ConferenceTalksWindow(self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
 		sessionsWindow.connect("quit", self._on_quit)
 		sessionsWindow.connect("home", self._on_home)
+		sessionsWindow.connect("jump-to", self._on_jump)
 		sessionsWindow.show()
+		return sessionsWindow
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_row_activated(self, view, path, column):
+		itr = self._model.get_iter(path)
+		node = self._model.get_value(itr, 0)
+		self._window_from_node(node)
 
 
 gobject.type_register(ConferenceSessionsWindow)
@@ -731,10 +796,6 @@ class ConferenceTalksWindow(ListWindow):
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 1)
 		yield gobject.TYPE_STRING, column
-
-	def _get_current_row(self):
-		# @todo Not implemented yet
-		return 0
 
 	def _refresh(self):
 		ListWindow._refresh(self)
@@ -764,18 +825,22 @@ class ConferenceTalksWindow(ListWindow):
 		self._hide_loading()
 		self._errorBanner.push_message(str(exception))
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-
+	def _window_from_node(self, node):
 		sessionsWindow = ConferenceTalkWindow(self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
 		sessionsWindow.connect("quit", self._on_quit)
 		sessionsWindow.connect("home", self._on_home)
+		sessionsWindow.connect("jump-to", self._on_jump)
 		sessionsWindow.show()
+		return sessionsWindow
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_row_activated(self, view, path, column):
+		itr = self._model.get_iter(path)
+		node = self._model.get_value(itr, 0)
+		self._window_from_node(node)
 
 
 gobject.type_register(ConferenceTalksWindow)
@@ -816,6 +881,9 @@ class ConferenceTalkWindow(BasicWindow):
 			self._player.subtitle,
 		)
 		self._set_context(self._player.state)
+
+	def jump_to(self, node):
+		assert self._node is node
 
 	@property
 	def _active(self):

@@ -9,6 +9,12 @@ import backend
 _moduleLogger = logging.getLogger(__name__)
 
 
+SOURCE_RADIO = "radio"
+SOURCE_CONFERENCES = "conferences"
+SOURCE_MAGAZINES = "magazines"
+SOURCE_SCRIPTURES = "scriptures"
+
+
 class Connection(object):
 
 	def __init__(self):
@@ -68,9 +74,9 @@ class AudioIndex(object):
 		if key in self._sources:
 			node = self._sources[key]
 		else:
-			if source == "radio":
+			if source == SOURCE_RADIO:
 				node = RadioNode(self._connection)
-			elif source == "conferences":
+			elif source == SOURCE_CONFERENCES:
 				assert langId is not None
 				node = ConferencesNode(self._connection, langId)
 			else:
@@ -99,11 +105,12 @@ class AudioIndex(object):
 
 class Node(object):
 
-	def __init__(self, connection, parent, data):
+	def __init__(self, connection, parent, data, id):
 		self._connection = connection
 		self._parent = weakref.ref(parent) if parent is not None else None
 		self._data = data
 		self._children = None
+		self._id = id
 
 	def get_children(self, on_success, on_error):
 		if self._children is None:
@@ -124,6 +131,10 @@ class Node(object):
 	def title(self):
 		raise NotImplementedError("On %s" % type(self))
 
+	@property
+	def id(self):
+		return self._id
+
 	def is_leaf(self):
 		raise NotImplementedError("")
 
@@ -133,8 +144,8 @@ class Node(object):
 
 class ParentNode(Node):
 
-	def __init__(self, connection, parent, data):
-		Node.__init__(self, connection, parent, data)
+	def __init__(self, connection, parent, data, id):
+		Node.__init__(self, connection, parent, data, id)
 		self._request = None
 
 	def is_leaf(self):
@@ -158,7 +169,7 @@ class ParentNode(Node):
 	def _get_func(self):
 		raise NotImplementedError()
 
-	def _create_child(self, data):
+	def _create_child(self, data, id):
 		raise NotImplementedError()
 
 	@misc_utils.log_exception(_moduleLogger)
@@ -167,8 +178,8 @@ class ParentNode(Node):
 		self._request = None
 		try:
 			self._children = [
-				self._create_child(child)
-				for child in data
+				self._create_child(child, i)
+				for i, child in enumerate(data)
 			]
 		except Exception, e:
 			_moduleLogger.exception("Translating error")
@@ -186,8 +197,8 @@ class ParentNode(Node):
 
 class LeafNode(Node):
 
-	def __init__(self, connection, parent, data):
-		Node.__init__(self, connection, parent, data)
+	def __init__(self, connection, parent, data, id):
+		Node.__init__(self, connection, parent, data, id)
 
 	def is_leaf(self):
 		return True
@@ -211,7 +222,7 @@ class LeafNode(Node):
 class RadioNode(ParentNode):
 
 	def __init__(self, connection):
-		ParentNode.__init__(self, connection, None, {})
+		ParentNode.__init__(self, connection, None, {}, SOURCE_RADIO)
 
 	@property
 	def title(self):
@@ -220,14 +231,14 @@ class RadioNode(ParentNode):
 	def _get_func(self):
 		return "get_radio_channels", (), {}
 
-	def _create_child(self, data):
-		return RadioChannelNode(self._connection, self, data)
+	def _create_child(self, data, id):
+		return RadioChannelNode(self._connection, self, data, id)
 
 
 class RadioChannelNode(LeafNode):
 
-	def __init__(self, connection, parent, data):
-		LeafNode.__init__(self, connection, parent, data)
+	def __init__(self, connection, parent, data, id):
+		LeafNode.__init__(self, connection, parent, data, id)
 		self._extendedData = {}
 		self._request = None
 
@@ -296,7 +307,7 @@ class RadioChannelNode(LeafNode):
 class ConferencesNode(ParentNode):
 
 	def __init__(self, connection, langId):
-		ParentNode.__init__(self, connection, None, {})
+		ParentNode.__init__(self, connection, None, {}, SOURCE_CONFERENCES)
 		self._langId = langId
 
 	@property
@@ -306,14 +317,14 @@ class ConferencesNode(ParentNode):
 	def _get_func(self):
 		return "get_conferences", (self._langId, ), {}
 
-	def _create_child(self, data):
-		return ConferenceNode(self._connection, self, data)
+	def _create_child(self, data, id):
+		return ConferenceNode(self._connection, self, data, id)
 
 
 class ConferenceNode(ParentNode):
 
-	def __init__(self, connection, parent, data):
-		ParentNode.__init__(self, connection, parent, data)
+	def __init__(self, connection, parent, data, id):
+		ParentNode.__init__(self, connection, parent, data, id)
 
 	@property
 	def title(self):
@@ -322,14 +333,14 @@ class ConferenceNode(ParentNode):
 	def _get_func(self):
 		return "get_conference_sessions", (self._data["id"], ), {}
 
-	def _create_child(self, data):
-		return SessionNode(self._connection, self, data)
+	def _create_child(self, data, id):
+		return SessionNode(self._connection, self, data, id)
 
 
 class SessionNode(ParentNode):
 
-	def __init__(self, connection, parent, data):
-		ParentNode.__init__(self, connection, parent, data)
+	def __init__(self, connection, parent, data, id):
+		ParentNode.__init__(self, connection, parent, data, id)
 
 	@property
 	def title(self):
@@ -338,14 +349,14 @@ class SessionNode(ParentNode):
 	def _get_func(self):
 		return "get_conference_talks", (self._data["id"], ), {}
 
-	def _create_child(self, data):
-		return TalkNode(self._connection, self, data)
+	def _create_child(self, data, id):
+		return TalkNode(self._connection, self, data, id)
 
 
 class TalkNode(LeafNode):
 
-	def __init__(self, connection, parent, data):
-		LeafNode.__init__(self, connection, parent, data)
+	def __init__(self, connection, parent, data, id):
+		LeafNode.__init__(self, connection, parent, data, id)
 
 	@property
 	def can_navigate(self):
@@ -362,3 +373,34 @@ class TalkNode(LeafNode):
 	@property
 	def uri(self):
 		return self._data["url"]
+
+
+def walk_ancestors(node):
+	while True:
+		yield node
+		try:
+			node = node.get_parent()
+		except RuntimeError:
+			return
+
+
+def common_paths(targetNode, currentNode):
+	targetNodePath = list(walk_ancestors(targetNode))
+	targetNodePath.reverse()
+	currentNodePath = list(walk_ancestors(currentNode))
+	currentNodePath.reverse()
+
+	ancestors = []
+	descendants = []
+
+	for i, (t, c) in enumerate(zip(targetNodePath, currentNodePath)):
+		if t is not c:
+			return ancestors, None, descendants
+		ancestors.append(t)
+
+	descendants.extend(
+		child
+		for child in targetNodePath[i+1:]
+	)
+
+	return ancestors, currentNode, descendants

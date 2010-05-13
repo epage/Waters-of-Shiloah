@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo Implement Jump TO
-@todo Implement highlighting of current track
 @todo Restructure so there is a windows/ folder with a file per source
 @todo Add additional sources
 @bug All connect's need disconnects or else we will leak a bunch of objects
@@ -31,7 +29,7 @@ import util.misc as misc_utils
 
 import imagestore
 import player
-import index
+import stream_index
 import windows
 
 
@@ -44,7 +42,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 	def __init__(self):
 		super(MormonChannelProgram, self).__init__()
 		self._store = imagestore.ImageStore("../data", "../data")
-		self._index = index.AudioIndex()
+		self._index = stream_index.AudioIndex()
 		self._player = player.Player(self._index)
 
 		self._index.start()
