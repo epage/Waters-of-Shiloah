@@ -4,9 +4,18 @@
 """
 @todo Restructure so there is a windows/ folder with a file per source
 @todo Add additional sources
+@todo Switch home icon color
+@todo Switch from swappping icons on press to the pressed version of icons
+@bug Fix presenter display
 @bug All connect's need disconnects or else we will leak a bunch of objects
 @todo Track recent
+@todo Favorites
+@todo Sequential playback
+@todo Enable Call Monitor
+@todo Audio seek bar
+@todo Persisted Pause
 @todo Reverse order option.  Toggle between playing ascending/descending chronological order
+@todo Podcast integration
 """
 
 from __future__ import with_statement
