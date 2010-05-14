@@ -427,15 +427,15 @@ class RadioWindow(BasicWindow):
 		if navState == "clicking":
 			if self._player.state == self._player.STATE_PLAY:
 				if self._active:
-					imageName = "pause"
+					imageName = "pause_pressed"
 				else:
-					imageName = "play"
+					imageName = "play_pressed"
 			elif self._player.state == self._player.STATE_PAUSE:
-				imageName = "play"
+				imageName = "play_pressed"
 			elif self._player.state == self._player.STATE_STOP:
-				imageName = "play"
+				imageName = "play_pressed"
 			else:
-				imageName = "play"
+				imageName = "play_pressed"
 				_moduleLogger.info("Unhandled player state %s" % self._player.state)
 		elif navState == "down":
 			imageName = "home"
@@ -939,13 +939,13 @@ class ConferenceTalkWindow(BasicWindow):
 		if navState == "clicking":
 			if self._player.state == self._player.STATE_PLAY:
 				if self._active:
-					imageName = "pause"
+					imageName = "pause_pressed"
 				else:
-					imageName = "play"
+					imageName = "play_pressed"
 			elif self._player.state == self._player.STATE_PAUSE:
-				imageName = "play"
+				imageName = "play_pressed"
 			elif self._player.state == self._player.STATE_STOP:
-				imageName = "play"
+				imageName = "play_pressed"
 			else:
 				_moduleLogger.info("Unhandled player state %s" % self._player.state)
 		elif navState == "down":

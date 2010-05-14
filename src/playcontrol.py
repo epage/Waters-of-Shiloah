@@ -102,25 +102,29 @@ class NavControl(gobject.GObject, go_utils.AutoSignal):
 	def _on_navigating(self, widget, navState):
 		if navState == "down":
 			imageName = "small_home"
-		elif navState == "clicking" or not self._player.can_navigate:
+		elif navState == "clicking":
 			if widget is self._controlBox:
-				if self._player.state == "play":
-					imageName = "small_play"
+				if self._player.state == self._player.STATE_PLAY:
+					imageName = "small_pause_pressed"
 				else:
-					imageName = "small_pause"
-			elif widget is self._displayBox:
+					imageName = "small_play_pressed"
+			else:
 				if self._player.state == self._player.STATE_PLAY:
 					imageName = "small_pause"
 				else:
 					imageName = "small_play"
+		elif self._player.can_navigate:
+			if navState == "up":
+				imageName = "small_play"
+			elif navState == "left":
+				imageName = "small_next"
+			elif navState == "right":
+				imageName = "small_prev"
+		else:
+			if self._player.state == self._player.STATE_PLAY:
+				imageName = "small_pause"
 			else:
-				raise NotImplementedError()
-		elif navState == "up":
-			imageName = "small_play"
-		elif navState == "left":
-			imageName = "small_next"
-		elif navState == "right":
-			imageName = "small_prev"
+				imageName = "small_play"
 
 		imagePath = self._store.STORE_LOOKUP[imageName]
 		self._store.set_image_from_store(self._controlButton, imagePath)

@@ -26,7 +26,7 @@ class NavigationBox(gobject.GObject):
 		),
 	}
 
-	MINIMUM_MOVEMENT = 20
+	MINIMUM_MOVEMENT = 32
 
 	_NO_POSITION = -1, -1
 
@@ -130,6 +130,7 @@ class StreamPresenter(object):
 		self._title = ""
 		self._subtitle = ""
 		self._buttonImage = None
+		self._imageName = ""
 
 	@property
 	def toplevel(self):
@@ -149,12 +150,15 @@ class StreamPresenter(object):
 		self._draw_presenter(cairoContext)
 
 	def set_state(self, stateImage):
+		if stateImage == self._imageName:
+			return
+		self._imageName = stateImage
 		self._buttonImage = self._store.get_surface_from_store(stateImage)
 
 		cairoContext = self._image.window.cairo_create()
 		if not self._isPortrait:
 			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-		self._draw_state(cairoContext)
+		self._draw_presenter(cairoContext)
 
 	def set_context(self, backgroundImage, title, subtitle):
 		self._backgroundImage = self._store.get_surface_from_store(backgroundImage)

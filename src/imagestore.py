@@ -9,17 +9,23 @@ class ImageStore(object):
 	STORE_LOOKUP = {
 		"next": "next.png",
 		"prev": "prev.png",
+		"home": "home.png",
 		"pause": "pause.png",
 		"play": "play.png",
 		"stop": "stop.png",
-		"home": "home.png",
+		"pause_pressed": "pausepressed.png",
+		"play_pressed": "playpressed.png",
+		"stop_pressed": "stoppressed.png",
 
 		"small_next": "small_next.png",
 		"small_prev": "small_prev.png",
+		"small_home": "small_home.png",
 		"small_pause": "small_pause.png",
 		"small_play": "small_play.png",
 		"small_stop": "small_stop.png",
-		"small_home": "small_home.png",
+		"small_pause_pressed": "small_pausepressed.png",
+		"small_play_pressed": "small_playpressed.png",
+		"small_stop_pressed": "small_stoppressed.png",
 
 		"loading": "loading.gif",
 

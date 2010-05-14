@@ -4,8 +4,6 @@
 """
 @todo Restructure so there is a windows/ folder with a file per source
 @todo Add additional sources
-@todo Switch home icon color
-@todo Switch from swappping icons on press to the pressed version of icons
 @bug Fix presenter display
 @todo Track recent
 @todo Favorites
