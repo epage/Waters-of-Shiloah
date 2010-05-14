@@ -855,8 +855,10 @@ class ConferenceTalkWindow(BasicWindow):
 	def __init__(self, player, store, node):
 		BasicWindow.__init__(self, player, store)
 		self._node = node
+		self._playerNode = self._player.node
 
 		self.connect_auto(self._player, "state-change", self._on_player_state_change)
+		self.connect_auto(self._player, "title-change", self._on_player_title_change)
 		self.connect_auto(self._player, "error", self._on_player_error)
 
 		self._loadingBanner = banners.GenericBanner()
@@ -889,7 +891,7 @@ class ConferenceTalkWindow(BasicWindow):
 
 	@property
 	def _active(self):
-		return self._player.node is self._node
+		return self._playerNode is self._node
 
 	def _show_loading(self):
 		animationPath = self._store.STORE_LOOKUP["loading"]
@@ -918,6 +920,12 @@ class ConferenceTalkWindow(BasicWindow):
 			return
 
 		self._set_context(newState)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_title_change(self, player, node):
+		if not self._active or node in [None, self._node]:
+			return
+		self.emit("jump-to", node)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_error(self, player, err, debug):
@@ -972,9 +980,15 @@ class ConferenceTalkWindow(BasicWindow):
 		elif navState == "up":
 			pass
 		elif navState == "left":
-			self._player.next()
+			if self._active:
+				self._player.next()
+			else:
+				pass # @todo Not Implemented
 		elif navState == "right":
-			self._player.back()
+			if self._active:
+				self._player.back()
+			else:
+				pass # @todo Not Implemented
 
 
 gobject.type_register(ConferenceTalkWindow)
