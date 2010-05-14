@@ -200,11 +200,13 @@ class SourceSelector(BasicWindow):
 		self._buttonLayout.pack_start(self._magazineWrapper, True, True)
 		self._buttonLayout.pack_start(self._scriptureWrapper, True, True)
 
+		self._separator = gtk.HSeparator()
 		self._playcontrol = playcontrol.NavControl(player, store)
 		self._playcontrol.connect("jump-to", self._on_jump)
 
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._buttonLayout, True, True)
+		self._layout.pack_start(self._separator, False, True)
 		self._layout.pack_start(self._playcontrol.toplevel, False, True)
 
 		self._window.set_title(constants.__pretty_app_name__)
