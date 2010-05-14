@@ -855,12 +855,16 @@ class ConferenceTalkWindow(BasicWindow):
 		self._node = node
 
 		self.connect_auto(self._player, "state-change", self._on_player_state_change)
-		self.connect_auto(self._player, "title-change", self._on_player_title_change)
 		self.connect_auto(self._player, "error", self._on_player_error)
 
 		self._loadingBanner = banners.GenericBanner()
 
 		self._presenter = presenter.StreamPresenter(self._store)
+		self._presenter.set_context(
+			self._store.STORE_LOOKUP["conference_background"],
+			self._node.title,
+			self._node.subtitle,
+		)
 		self._presenterNavigation = presenter.NavigationBox()
 		self._presenterNavigation.toplevel.add(self._presenter.toplevel)
 		self._presenterNavigation.connect("action", self._on_nav_action)
@@ -876,12 +880,6 @@ class ConferenceTalkWindow(BasicWindow):
 		self._window.show_all()
 		self._errorBanner.toplevel.hide()
 		self._loadingBanner.toplevel.hide()
-
-		self._presenter.set_context(
-			self._store.STORE_LOOKUP["conference_background"],
-			self._player.title,
-			self._player.subtitle,
-		)
 		self._set_context(self._player.state)
 
 	def jump_to(self, node):
@@ -918,17 +916,6 @@ class ConferenceTalkWindow(BasicWindow):
 			return
 
 		self._set_context(newState)
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_title_change(self, player, node):
-		if node is not self._node or node is None:
-			_moduleLogger.info("Player title magically changed to %s" % player.title)
-			return
-		self._presenter.set_context(
-			self._store.STORE_LOOKUP["conference_background"],
-			self._player.title,
-			self._player.subtitle,
-		)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_error(self, player, err, debug):

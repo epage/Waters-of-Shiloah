@@ -37,6 +37,7 @@ class Player(gobject.GObject):
 		gobject.GObject.__init__(self)
 		self._index = index
 		self._node = None
+
 		self._stream = stream.GSTStream()
 		self._stream.connect("state-change", self._on_stream_state)
 		self._stream.connect("eof", self._on_stream_eof)

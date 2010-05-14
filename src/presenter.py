@@ -131,6 +131,7 @@ class StreamPresenter(object):
 		self._subtitle = ""
 		self._buttonImage = None
 		self._imageName = ""
+		self._dims = 0, 0
 
 	@property
 	def toplevel(self):
@@ -144,10 +145,7 @@ class StreamPresenter(object):
 		else:
 			raise NotImplementedError(orientation)
 
-		cairoContext = self._image.window.cairo_create()
-		if not self._isPortrait:
-			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-		self._draw_presenter(cairoContext)
+		self._image.queue_draw()
 
 	def set_state(self, stateImage):
 		if stateImage == self._imageName:
@@ -155,13 +153,12 @@ class StreamPresenter(object):
 		self._imageName = stateImage
 		self._buttonImage = self._store.get_surface_from_store(stateImage)
 
-		cairoContext = self._image.window.cairo_create()
-		if not self._isPortrait:
-			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-		self._draw_presenter(cairoContext)
+		self._image.queue_draw()
 
 	def set_context(self, backgroundImage, title, subtitle):
 		self._backgroundImage = self._store.get_surface_from_store(backgroundImage)
+		self._title = title
+		self._subtitle = subtitle
 
 		if self._isPortrait:
 			backWidth = self._backgroundImage.get_width()
@@ -171,10 +168,7 @@ class StreamPresenter(object):
 			backWidth = self._backgroundImage.get_height()
 		self._image.set_size_request(backWidth, backHeight)
 
-		cairoContext = self._image.window.cairo_create()
-		if not self._isPortrait:
-			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
-		self._draw_presenter(cairoContext)
+		self._image.queue_draw()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_expose(self, widget, event):
@@ -184,8 +178,12 @@ class StreamPresenter(object):
 		self._draw_presenter(cairoContext)
 
 	def _draw_presenter(self, cairoContext):
-		# Blank things
 		rect = self._image.get_allocation()
+		self._dims = rect.width, rect.height
+		startContent = 30, self._dims[1] - 125
+		endContent = self._dims[0] - 30,  self._dims[1] - 5
+
+		# Blank things
 		cairoContext.rectangle(
 			0,
 			0,
@@ -194,7 +192,6 @@ class StreamPresenter(object):
 		)
 		cairoContext.set_source_rgb(0, 0, 0)
 		cairoContext.fill()
-		cairoContext.paint()
 
 		# Draw Background
 		if self._backgroundImage is not None:
@@ -205,25 +202,32 @@ class StreamPresenter(object):
 			)
 			cairoContext.paint()
 
+		# Control background
+		cairoContext.rectangle(
+			startContent[0],
+			startContent[1],
+			endContent[0] - startContent[0],
+			endContent[1] - startContent[1],
+		)
+		cairoContext.set_source_rgba(0.9, 0.9, 0.9, 0.75)
+		cairoContext.fill()
+
 		# title
 		if self._title or self._subtitle:
-			backWidth = self._backgroundImage.get_width()
-			backHeight = self._backgroundImage.get_height()
-
 			pangoContext = self._image.create_pango_context()
 			textLayout = pango.Layout(pangoContext)
 
 			textLayout.set_markup(self._subtitle)
 			textWidth, textHeight = textLayout.get_pixel_size()
-			subtitleTextX = backWidth / 2 - textWidth / 2
-			subtitleTextY = backHeight - textHeight - self._buttonImage.get_height()
+			subtitleTextX = self._dims[0] / 2 - textWidth / 2
+			subtitleTextY = self._dims[1] - textHeight - self._buttonImage.get_height() + 10
 			cairoContext.move_to(subtitleTextX, subtitleTextY)
 			cairoContext.set_source_rgb(0, 0, 0)
 			cairoContext.show_layout(textLayout)
 
 			textLayout.set_markup(self._title)
 			textWidth, textHeight = textLayout.get_pixel_size()
-			textX = backWidth / 2 - textWidth / 2
+			textX = self._dims[0] / 2 - textWidth / 2
 			textY = subtitleTextY - textHeight
 			cairoContext.move_to(textX, textY)
 			cairoContext.set_source_rgb(0, 0, 0)
@@ -234,13 +238,10 @@ class StreamPresenter(object):
 	def _draw_state(self, cairoContext):
 		if self._backgroundImage is None or self._buttonImage is None:
 			return
-		backWidth = self._backgroundImage.get_width()
-		backHeight = self._backgroundImage.get_height()
-
 		cairoContext.set_source_surface(
 			self._buttonImage,
-			backWidth / 2 - self._buttonImage.get_width() / 2,
-			backHeight - self._buttonImage.get_height() + 5,
+			self._dims[0] / 2 - self._buttonImage.get_width() / 2,
+			self._dims[1] - self._buttonImage.get_height() + 5,
 		)
 		cairoContext.paint()
 

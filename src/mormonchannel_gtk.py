@@ -4,13 +4,12 @@
 """
 @todo Restructure so there is a windows/ folder with a file per source
 @todo Add additional sources
-@bug Fix presenter display
 @todo Track recent
-@todo Favorites
 @todo Sequential playback
 @todo Enable Call Monitor
 @todo Audio seek bar
 @todo Persisted Pause
+@todo Favorites
 @todo Reverse order option.  Toggle between playing ascending/descending chronological order
 @todo Podcast integration
 """
@@ -53,7 +52,6 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 		self._index.start()
 		try:
-
 			if not hildonize.IS_HILDON_SUPPORTED:
 				_moduleLogger.info("No hildonization support")
 

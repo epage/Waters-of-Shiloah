@@ -368,7 +368,11 @@ class TalkNode(LeafNode):
 
 	@property
 	def subtitle(self):
-		return self._data["speaker"]
+		speaker = self._data["speaker"]
+		if speaker is not None:
+			return speaker
+		else:
+			return ""
 
 	@property
 	def uri(self):
