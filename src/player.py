@@ -4,6 +4,7 @@ import gobject
 
 import util.misc as misc_utils
 import stream
+import call_monitor
 
 
 _moduleLogger = logging.getLogger(__name__)
@@ -37,6 +38,9 @@ class Player(gobject.GObject):
 		gobject.GObject.__init__(self)
 		self._index = index
 		self._node = None
+
+		self._calls = call_monitor.CallMonitor()
+		self._calls.connect("call_start", self._on_call_start)
 
 		self._stream = stream.GSTStream()
 		self._stream.connect("state-change", self._on_stream_state)
@@ -83,6 +87,8 @@ class Player(gobject.GObject):
 		_moduleLogger.info("play")
 		self._stream.play()
 
+		self._calls.start()
+
 	def pause(self):
 		_moduleLogger.info("pause")
 		self._stream.pause()
@@ -91,6 +97,8 @@ class Player(gobject.GObject):
 		_moduleLogger.info("stop")
 		self._stream.stop()
 		self.set_piece_by_node(None)
+
+		self._calls.stop()
 
 	def back(self):
 		_moduleLogger.info("back")
@@ -112,6 +120,11 @@ class Player(gobject.GObject):
 	def _on_stream_error(self, s, error, debug):
 		_moduleLogger.info("Error %s %s" % (error, debug))
 		self.emit("error", error, debug)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_call_start(self, monitor):
+		_moduleLogger.info("Call in progress, pausing")
+		self.pause()
 
 
 gobject.type_register(Player)

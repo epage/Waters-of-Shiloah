@@ -6,7 +6,6 @@
 @todo Add additional sources
 @todo Track recent
 @todo Sequential playback
-@todo Enable Call Monitor
 @todo Audio seek bar
 @todo Persisted Pause
 @todo Favorites
@@ -21,6 +20,8 @@ import logging
 import ConfigParser
 
 import gobject
+import dbus
+import dbus.mainloop.glib
 import gtk
 
 try:
@@ -138,6 +139,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 def run():
 	gobject.threads_init()
 	gtk.gdk.threads_init()
+	l = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
 	hildonize.set_application_title(constants.__pretty_app_name__)
 	app = MormonChannelProgram()
