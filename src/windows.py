@@ -350,8 +350,8 @@ class RadioWindow(BasicWindow):
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._radioLayout, True, True)
 
-		self._window.set_title(self._node.title)
 		self._dateShown = datetime.datetime.now()
+		self._update_title()
 
 	def show(self):
 		BasicWindow.show(self)
@@ -363,6 +363,9 @@ class RadioWindow(BasicWindow):
 
 	def jump_to(self, node):
 		_moduleLogger.info("Only 1 channel, nothing to jump to")
+
+	def _update_title(self):
+		self._window.set_title("%s - %s" % (self._node.title, self._dateShown.strftime("%m/%d")))
 
 	@property
 	def _active(self):
@@ -474,9 +477,11 @@ class RadioWindow(BasicWindow):
 			pass
 		elif navState == "left":
 			self._dateShown += datetime.timedelta(days=1)
+			self._update_title()
 			self._refresh()
 		elif navState == "right":
 			self._dateShown -= datetime.timedelta(days=1)
+			self._update_title()
 			self._refresh()
 
 	@misc_utils.log_exception(_moduleLogger)
