@@ -32,7 +32,7 @@ class ImageStore(object):
 		"radio_header": "radio_header.png",
 		"conference_background": "conference_bg.png",
 		"magazine_background": "magazine_bg.png",
-		"scriptures_background": "scripture_bg.png",
+		"scripture_background": "scripture_bg.png",
 
 		"conferences": "conference.png",
 		"magazines": "magazines.png",

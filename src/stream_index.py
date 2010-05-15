@@ -79,6 +79,12 @@ class AudioIndex(object):
 			elif source == SOURCE_CONFERENCES:
 				assert langId is not None
 				node = ConferencesNode(self._connection, langId)
+			elif source == SOURCE_MAGAZINES:
+				assert langId is not None
+				node = MagazinesNode(self._connection, langId)
+			elif source == SOURCE_SCRIPTURES:
+				assert langId is not None
+				node = ScripturesNode(self._connection, langId)
 			else:
 				raise NotImplementedError(source)
 			self._sources[key] = node
@@ -373,6 +379,152 @@ class TalkNode(LeafNode):
 			return speaker
 		else:
 			return ""
+
+	@property
+	def uri(self):
+		return self._data["url"]
+
+
+class MagazinesNode(ParentNode):
+
+	def __init__(self, connection, langId):
+		ParentNode.__init__(self, connection, None, {}, SOURCE_MAGAZINES)
+		self._langId = langId
+
+	@property
+	def title(self):
+		return "Magazines"
+
+	def _get_func(self):
+		return "get_magazines", (self._langId, ), {}
+
+	def _create_child(self, data, id):
+		return MagazineNode(self._connection, self, data, id)
+
+
+class MagazineNode(ParentNode):
+
+	def __init__(self, connection, parent, data, id):
+		ParentNode.__init__(self, connection, parent, data, id)
+
+	@property
+	def title(self):
+		return self._data["title"]
+
+	def _get_func(self):
+		return "get_magazine_issues", (self._data["id"], ), {}
+
+	def _create_child(self, data, id):
+		return IssueNode(self._connection, self, data, id)
+
+
+class IssueNode(ParentNode):
+
+	def __init__(self, connection, parent, data, id):
+		ParentNode.__init__(self, connection, parent, data, id)
+
+	@property
+	def title(self):
+		return self._data["title"]
+
+	def _get_func(self):
+		return "get_magazine_articles", (self._data["id"], ), {}
+
+	def _create_child(self, data, id):
+		return ArticleNode(self._connection, self, data, id)
+
+
+class ArticleNode(LeafNode):
+
+	def __init__(self, connection, parent, data, id):
+		LeafNode.__init__(self, connection, parent, data, id)
+
+	@property
+	def can_navigate(self):
+		return True
+
+	@property
+	def title(self):
+		return self._data["title"]
+
+	@property
+	def subtitle(self):
+		speaker = self._data["author"]
+		if speaker is not None:
+			return speaker
+		else:
+			return ""
+
+	@property
+	def uri(self):
+		return self._data["url"]
+
+
+class ScripturesNode(ParentNode):
+
+	def __init__(self, connection, langId):
+		ParentNode.__init__(self, connection, None, {}, SOURCE_SCRIPTURES)
+		self._langId = langId
+
+	@property
+	def title(self):
+		return "Scriptures"
+
+	def _get_func(self):
+		return "get_scriptures", (self._langId, ), {}
+
+	def _create_child(self, data, id):
+		return ScriptureNode(self._connection, self, data, id)
+
+
+class ScriptureNode(ParentNode):
+
+	def __init__(self, connection, parent, data, id):
+		ParentNode.__init__(self, connection, parent, data, id)
+
+	@property
+	def title(self):
+		return self._data["title"]
+
+	def _get_func(self):
+		return "get_scripture_books", (self._data["id"], ), {}
+
+	def _create_child(self, data, id):
+		return BookNode(self._connection, self, data, id)
+
+
+class BookNode(ParentNode):
+
+	def __init__(self, connection, parent, data, id):
+		ParentNode.__init__(self, connection, parent, data, id)
+
+	@property
+	def title(self):
+		return self._data["title"]
+
+	def _get_func(self):
+		return "get_scripture_chapters", (self._data["id"], ), {}
+
+	def _create_child(self, data, id):
+		return ChapterNode(self._connection, self, data, id)
+
+
+class ChapterNode(LeafNode):
+
+	def __init__(self, connection, parent, data, id):
+		LeafNode.__init__(self, connection, parent, data, id)
+
+	@property
+	def can_navigate(self):
+		return True
+
+	@property
+	def title(self):
+		return self._data["title"]
+
+	@property
+	def subtitle(self):
+		return ""
 
 	@property
 	def uri(self):

@@ -114,9 +114,9 @@ class SourceSelector(windows._base.BasicWindow):
 		elif node.id == stream_index.SOURCE_CONFERENCES:
 			Source = windows.conferences.ConferencesWindow
 		elif node.id == stream_index.SOURCE_MAGAZINES:
-			pass
+			Source = windows.magazines.MagazinesWindow
 		elif node.id == stream_index.SOURCE_SCRIPTURES:
-			pass
+			Source = windows.scriptures.ScripturesWindow
 		sourceWindow = Source(self._player, self._store, node)
 		sourceWindow.window.set_modal(True)
 		sourceWindow.window.set_transient_for(self._window)

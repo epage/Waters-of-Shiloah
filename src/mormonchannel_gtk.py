@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo Add additional sources
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
 	@todo Track recent
 	@todo Persisted Pause
