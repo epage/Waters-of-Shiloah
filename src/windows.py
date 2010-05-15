@@ -545,6 +545,8 @@ class ListWindow(BasicWindow):
 		BasicWindow.__init__(self, player, store)
 		self._node = node
 
+		self.connect_auto(self._player, "title-change", self._on_player_title_change)
+
 		self._loadingBanner = banners.GenericBanner()
 
 		modelTypes, columns = zip(*self._get_columns())
@@ -621,6 +623,10 @@ class ListWindow(BasicWindow):
 		raise NotImplementedError("")
 
 	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_title_change(self, player, node):
+		self._select_row()
+
+	@misc_utils.log_exception(_moduleLogger)
 	def _on_jump(self, source, node):
 		ancestors, current, descendants = stream_index.common_paths(node, self._node)
 		if current is None:
@@ -694,9 +700,7 @@ class ConferencesWindow(ListWindow):
 			row = programNode, program["title"], program["full_title"]
 			self._model.append(row)
 
-		path = (self._get_current_row(), )
-		self._treeView.scroll_to_cell(path)
-		self._treeView.get_selection().select_path(path)
+		self._select_row()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
@@ -759,9 +763,7 @@ class ConferenceSessionsWindow(ListWindow):
 			row = programNode, program["title"]
 			self._model.append(row)
 
-		path = (self._get_current_row(), )
-		self._treeView.scroll_to_cell(path)
-		self._treeView.get_selection().select_path(path)
+		self._select_row()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
@@ -824,9 +826,7 @@ class ConferenceTalksWindow(ListWindow):
 			row = programNode, "%s\n%s" % (program["title"], program["speaker"])
 			self._model.append(row)
 
-		path = (self._get_current_row(), )
-		self._treeView.scroll_to_cell(path)
-		self._treeView.get_selection().select_path(path)
+		self._select_row()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
