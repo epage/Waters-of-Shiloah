@@ -290,8 +290,8 @@ class ScriptureChapterWindow(windows._base.BasicWindow):
 		if self._active and self._player.state == self._player.STATE_PLAY:
 			self._seekbar.show()
 			assert self._updateSeek is None
-			self._updateSeek = go_utils.Timeout(self._updateSeek, once=False)
-			self._updateSeek.start(seconds=30)
+			self._updateSeek = go_utils.Timeout(self._on_player_update_seek, once=False)
+			self._updateSeek.start(seconds=1)
 		else:
 			self._seekbar.hide()
 			self._updateSeek.cancel()

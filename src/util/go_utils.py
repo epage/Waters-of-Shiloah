@@ -110,9 +110,9 @@ class Timeout(object):
 		assert 0 <= timeoutInSeconds
 
 		if timeoutInSeconds == 0:
-			self.__timeoutId = gobject.idle_add(self._on_once)
+			self.__timeoutId = gobject.idle_add(callback)
 		else:
-			self.__timeoutId = timeout_add_seconds(timeoutInSeconds, self._on_once)
+			self.__timeoutId = timeout_add_seconds(timeoutInSeconds, callback)
 
 	def is_running(self):
 		return self.__timeoutId is not None
