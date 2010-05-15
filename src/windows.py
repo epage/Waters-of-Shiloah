@@ -860,6 +860,7 @@ class ConferenceTalkWindow(BasicWindow):
 		BasicWindow.__init__(self, player, store)
 		self._node = node
 		self._playerNode = self._player.node
+		self._nextSearch = None
 
 		self.connect_auto(self._player, "state-change", self._on_player_state_change)
 		self.connect_auto(self._player, "title-change", self._on_player_title_change)
@@ -1000,12 +1001,27 @@ class ConferenceTalkWindow(BasicWindow):
 			if self._active:
 				self._player.next()
 			else:
-				pass # @todo Not Implemented
+				assert self._nextSearch is None
+				self._nextSearch = stream_index.AsyncWalker(stream_index.get_next)
+				self._nextSearch.start(self._node, self._on_next_node, self._on_node_search_error)
 		elif navState == "right":
 			if self._active:
 				self._player.back()
 			else:
-				pass # @todo Not Implemented
+				assert self._nextSearch is None
+				self._nextSearch = stream_index.AsyncWalker(stream_index.get_previous)
+				self._nextSearch.start(self._node, self._on_next_node, self._on_node_search_error)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_next_node(self, node):
+		self._nextSearch = None
+		self.emit("jump-to", node)
+		self._window.destroy()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_node_search_error(self, e):
+		self._nextSearch = None
+		self._errorBanner.push_message(str(e))
 
 
 gobject.type_register(ConferenceTalkWindow)

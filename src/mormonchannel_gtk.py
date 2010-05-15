@@ -5,7 +5,6 @@
 @todo Restructure so there is a windows/ folder with a file per source
 @todo Add additional sources
 @todo Track recent
-@todo Presenter browsing when not active
 @todo Audio seek bar
 @todo Persisted Pause
 @todo Favorites
