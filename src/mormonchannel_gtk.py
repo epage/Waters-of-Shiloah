@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 """
+@bug Fix segfault on closing of window while playing
+@todo Add images for Magazines and Issues
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
 	@todo Track recent
 	@todo Persisted Pause
