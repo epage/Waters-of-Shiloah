@@ -928,8 +928,11 @@ class ConferenceTalkWindow(BasicWindow):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_title_change(self, player, node):
 		if not self._active or node in [None, self._node]:
+			self._playerNode = player.node
 			return
+		self._playerNode = player.node
 		self.emit("jump-to", node)
+		self._window.destroy()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_error(self, player, err, debug):
