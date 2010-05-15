@@ -98,6 +98,7 @@ class GSTStream(gobject.GObject):
 		_moduleLogger.info("Stopped")
 		self.emit("state-change", self.STATE_STOP)
 
+	@property
 	def elapsed(self):
 		try:
 			self._elapsed = self._player.query_position(self._timeFormat, None)[0]
@@ -105,6 +106,7 @@ class GSTStream(gobject.GObject):
 			pass
 		return self._elapsed
 
+	@property
 	def duration(self):
 		try:
 			self._duration = self._player.query_duration(self._timeFormat, None)[0]

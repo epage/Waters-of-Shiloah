@@ -654,7 +654,10 @@ class ListWindow(BasicWindow):
 		self._model.clear()
 
 	def _select_row(self):
-		path = (self._get_current_row(), )
+		rowIndex = self._get_current_row()
+		if rowIndex < 0:
+			return
+		path = (rowIndex, )
 		self._treeView.scroll_to_cell(path)
 		self._treeView.get_selection().select_path(path)
 
@@ -861,6 +864,7 @@ class ConferenceTalkWindow(BasicWindow):
 		self._node = node
 		self._playerNode = self._player.node
 		self._nextSearch = None
+		self._updateSeek = None
 
 		self.connect_auto(self._player, "state-change", self._on_player_state_change)
 		self.connect_auto(self._player, "title-change", self._on_player_title_change)
@@ -879,8 +883,12 @@ class ConferenceTalkWindow(BasicWindow):
 		self._presenterNavigation.connect("action", self._on_nav_action)
 		self._presenterNavigation.connect("navigating", self._on_navigating)
 
+		self._seekbar = hildonize.create_seekbar()
+		self._seekbar.connect("change-value", self._on_user_seek)
+
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._presenterNavigation.toplevel, True, True)
+		self._layout.pack_start(self._seekbar, False, False)
 
 		self._window.set_title(self._node.title)
 
@@ -890,6 +898,7 @@ class ConferenceTalkWindow(BasicWindow):
 		self._errorBanner.toplevel.hide()
 		self._loadingBanner.toplevel.hide()
 		self._set_context(self._player.state)
+		self._seekbar.hide()
 
 	def jump_to(self, node):
 		assert self._node is node
@@ -920,11 +929,28 @@ class ConferenceTalkWindow(BasicWindow):
 			_moduleLogger.info("Unhandled player state %s" % state)
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_player_state_change(self, player, newState):
-		if self._presenterNavigation.is_active():
-			return
+	def _on_user_seek(self, widget, scroll, value):
+		self._player.seek(value / 100.0)
 
-		self._set_context(newState)
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_update_seek(self):
+		self._seekbar.set_value(self._player.percent_elapsed * 100)
+		return True if not self._isDestroyed else False
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_state_change(self, player, newState):
+		if self._active and self._player.state == self._player.STATE_PLAY:
+			self._seekbar.show()
+			assert self._updateSeek is None
+			self._updateSeek = go_utils.Timeout(self._updateSeek, once=False)
+			self._updateSeek.start(seconds=30)
+		else:
+			self._seekbar.hide()
+			self._updateSeek.cancel()
+			self._updateSeek = None
+
+		if not self._presenterNavigation.is_active():
+			self._set_context(newState)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_title_change(self, player, node):

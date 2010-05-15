@@ -356,6 +356,28 @@ else:
 	hildonize_combo_entry = _null_hildonize_combo_entry
 
 
+def _null_create_seekbar():
+	adjustment = gtk.Adjustment(0, 0, 101, 1, 5, 1)
+	seek = gtk.HScale(adjustment)
+	seek.set_draw_value(False)
+	return seek
+
+
+def _fremantle_create_seekbar():
+	seek = hildon.Seekbar()
+	seek.set_range(0.0, 100)
+	seek.set_draw_value(False)
+	seek.set_update_policy(gtk.UPDATE_DISCONTINUOUS)
+	return seek
+
+
+try:
+	hildon.Seekbar
+	create_seekbar = _fremantle_create_seekbar
+except AttributeError:
+	create_seekbar = _null_create_seekbar
+
+
 def _fremantle_hildonize_scrollwindow(scrolledWindow):
 	pannableWindow = hildon.PannableArea()
 

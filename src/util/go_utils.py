@@ -95,16 +95,20 @@ class Async(object):
 
 class Timeout(object):
 
-	def __init__(self, func):
+	def __init__(self, func, once = True):
 		self.__func = func
 		self.__timeoutId = None
+		self.__once = once
 
 	def start(self, **kwds):
 		assert self.__timeoutId is None
 
+		callback = self._on_once if self.__once else self.__func
+
 		assert len(kwds) == 1
 		timeoutInSeconds = kwds["seconds"]
 		assert 0 <= timeoutInSeconds
+
 		if timeoutInSeconds == 0:
 			self.__timeoutId = gobject.idle_add(self._on_once)
 		else:

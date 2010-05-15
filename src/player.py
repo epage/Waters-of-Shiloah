@@ -107,6 +107,15 @@ class Player(gobject.GObject):
 		self._nextSearch = stream_index.AsyncWalker(stream_index.get_next)
 		self._nextSearch.start(self.node, self._on_next_node, self._on_node_search_error)
 
+	def seek(self, percent):
+		target = percent * self._stream.duration
+		self._stream.seek_time(target)
+
+	@property
+	def percent_elapsed(self):
+		percent = float(self._stream.elapsed) / float(self._stream.duration)
+		return percent
+
 	def _set_piece_by_node(self, node):
 		assert node is None or node.is_leaf(), node
 		if self._node is node:

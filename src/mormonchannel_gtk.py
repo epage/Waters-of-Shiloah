@@ -4,7 +4,6 @@
 """
 @todo Restructure so there is a windows/ folder with a file per source
 @todo Add additional sources
-@todo Audio seek bar
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
 	@todo Track recent
 	@todo Persisted Pause
