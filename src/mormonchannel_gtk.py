@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo Restructure so there is a windows/ folder with a file per source
 @todo Add additional sources
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
 	@todo Track recent
@@ -65,7 +64,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 				self._osso_c = None
 				self._deviceState = None
 
-			self._sourceSelector = windows.SourceSelector(self._player, self._store, self._index)
+			self._sourceSelector = windows.source.SourceSelector(self._player, self._store, self._index)
 			self._sourceSelector.window.connect("destroy", self._on_destroy)
 			self._sourceSelector.show()
 			self._load_settings()
