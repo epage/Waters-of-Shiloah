@@ -4,10 +4,11 @@
 """
 @todo Restructure so there is a windows/ folder with a file per source
 @todo Add additional sources
-@todo Track recent
 @todo Audio seek bar
-@todo Persisted Pause
-@todo Favorites
+@todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
+	@todo Track recent
+	@todo Persisted Pause
+	@todo Favorites
 @todo Sleep timer
 @todo Reverse order option.  Toggle between playing ascending/descending chronological order
 @todo Podcast integration
