@@ -408,3 +408,102 @@ def common_paths(targetNode, currentNode):
 	)
 
 	return ancestors, currentNode, descendants
+
+
+class AsyncWalker(object):
+
+	def __init__(self, func):
+		self._func = func
+		self._run = None
+
+	def start(self, *args, **kwds):
+		assert self._run is None
+		self._run = self._func(*args, **kwds)
+		node = self._run.send(None) # priming the function
+		node.get_children(self.on_success, self.on_error)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def on_success(self, children):
+		_moduleLogger.debug("Processing success for: %r", self._func)
+		try:
+			node = self._run.send(children)
+		except StopIteration, e:
+			pass
+		else:
+			node.get_children(self.on_success, self.on_error)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def on_error(self, error):
+		_moduleLogger.debug("Processing error for: %r", self._func)
+		try:
+			node = self._run.throw(error)
+		except StopIteration, e:
+			pass
+		else:
+			node.get_children(self.on_success, self.on_error)
+
+
+def get_next(node, on_success, on_error):
+	try:
+		assert node.is_leaf(), node
+
+		# Find next branch
+		childNode = node
+		while True:
+			parent = childNode.get_parent()
+			siblings = yield parent
+			for i, sibling in enumerate(siblings):
+				if sibling is childNode:
+					break
+			i += 1
+			if i < len(siblings):
+				sibling = siblings[i]
+				break
+			else:
+				childNode = parent
+
+		# dig into that branch to find the first leaf
+		nodes = [sibling]
+		while nodes:
+			child = nodes.pop(0)
+			if child.is_leaf():
+				on_success(child)
+				return
+			children = yield child
+			nodes[0:0] = children
+		raise RuntimeError("Ran out of nodes when hunting for first leaf of %s" % node)
+	except Exception, e:
+		on_error(e)
+
+
+def get_previous(node, on_success, on_error):
+	try:
+		assert node.is_leaf(), node
+
+		# Find next branch
+		childNode = node
+		while True:
+			parent = childNode.get_parent()
+			siblings = yield parent
+			for i, sibling in enumerate(siblings):
+				if sibling is childNode:
+					break
+			i -= 1
+			if 0 <= i:
+				sibling = siblings[i]
+				break
+			else:
+				childNode = parent
+
+		# dig into that branch to find the first leaf
+		nodes = [sibling]
+		while nodes:
+			child = nodes.pop(-1)
+			if child.is_leaf():
+				on_success(child)
+				return
+			children = yield child
+			nodes[0:0] = children
+		raise RuntimeError("Ran out of nodes when hunting for first leaf of %s" % node)
+	except Exception, e:
+		on_error(e)
