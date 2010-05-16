@@ -36,7 +36,6 @@ class GenericBanner(object):
 		self.toplevel.show()
 
 	def hide(self):
-		assert self._label.get_text(), self._label.get_text()
 		self._label.set_text("")
 		self.toplevel.hide()
 
