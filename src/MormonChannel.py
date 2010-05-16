@@ -27,6 +27,12 @@ if __name__ == "__main__":
 		if e.errno != 17:
 			raise
 
+	try:
+		os.makedirs(constants._cache_path_)
+	except OSError, e:
+		if e.errno != 17:
+			raise
+
 	logging.basicConfig(level=logging.DEBUG, filename=constants._user_logpath_)
 	_moduleLogger.info("%s %s-%s" % (constants.__app_name__, constants.__version__, constants.__build__))
 	_moduleLogger.info("OS: %s" % (os.uname()[0], ))

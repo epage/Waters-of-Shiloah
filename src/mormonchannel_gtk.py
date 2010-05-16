@@ -15,6 +15,7 @@
 
 from __future__ import with_statement
 
+import os
 import gc
 import logging
 import ConfigParser
@@ -47,7 +48,9 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 	def __init__(self):
 		super(MormonChannelProgram, self).__init__()
-		self._store = imagestore.ImageStore("../data", "../data")
+		currentPath = os.path.abspath(__file__)
+		storePath = os.path.join(os.path.split(os.path.dirname(currentPath))[0], "data")
+		self._store = imagestore.ImageStore(storePath, constants._cache_path_)
 		self._index = stream_index.AudioIndex()
 		self._player = player.Player(self._index)
 
