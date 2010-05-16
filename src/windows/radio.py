@@ -40,15 +40,19 @@ class RadioWindow(windows._base.BasicWindow):
 
 		textrenderer = gtk.CellRendererText()
 		timeColumn = gtk.TreeViewColumn("Time")
+		timeColumn.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
+		timeColumn.set_property("fixed-width", 80)
 		timeColumn.pack_start(textrenderer, expand=True)
 		timeColumn.add_attribute(textrenderer, "text", 0)
 
 		textrenderer = gtk.CellRendererText()
 		titleColumn = gtk.TreeViewColumn("Program")
+		titleColumn.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		titleColumn.pack_start(textrenderer, expand=True)
 		titleColumn.add_attribute(textrenderer, "text", 1)
 
 		self._treeView = gtk.TreeView()
+		self._treeView.set_property("fixed-height-mode", True)
 		self._treeView.set_headers_visible(False)
 		self._treeView.set_model(self._programmingModel)
 		self._treeView.append_column(timeColumn)

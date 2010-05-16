@@ -28,12 +28,15 @@ class ConferencesWindow(windows._base.ListWindow):
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Date")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
+		column.set_property("fixed-width", 96)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 1)
 		yield gobject.TYPE_STRING, column
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Conference")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 2)
 		yield gobject.TYPE_STRING, column
@@ -97,6 +100,7 @@ class ConferenceSessionsWindow(windows._base.ListWindow):
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Session")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 1)
 		yield gobject.TYPE_STRING, column
@@ -160,6 +164,7 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Talk")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 1)
 		yield gobject.TYPE_STRING, column

@@ -180,6 +180,7 @@ class ListWindow(BasicWindow):
 
 		self._treeView = gtk.TreeView()
 		self._treeView.connect("row-activated", self._on_row_activated)
+		self._treeView.set_property("fixed-height-mode", True)
 		self._treeView.set_headers_visible(False)
 		self._treeView.set_model(self._model)
 		for column in columns:

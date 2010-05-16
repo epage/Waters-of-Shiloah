@@ -28,12 +28,15 @@ class MagazinesWindow(windows._base.ListWindow):
 
 		pixrenderer = gtk.CellRendererPixbuf()
 		column = gtk.TreeViewColumn("Covers")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
+		column.set_property("fixed-width", 96)
 		column.pack_start(pixrenderer, expand=True)
 		column.add_attribute(pixrenderer, "pixbuf", 1)
 		yield gobject.TYPE_OBJECT, column
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Magazine")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 2)
 		yield gobject.TYPE_STRING, column
@@ -122,12 +125,15 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 
 		pixrenderer = gtk.CellRendererPixbuf()
 		column = gtk.TreeViewColumn("Covers")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
+		column.set_property("fixed-width", 96)
 		column.pack_start(pixrenderer, expand=True)
 		column.add_attribute(pixrenderer, "pixbuf", 1)
 		yield gobject.TYPE_OBJECT, column
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Issue")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 2)
 		yield gobject.TYPE_STRING, column
@@ -213,6 +219,7 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Article")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 1)
 		yield gobject.TYPE_STRING, column

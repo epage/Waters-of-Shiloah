@@ -28,6 +28,7 @@ class ScripturesWindow(windows._base.ListWindow):
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Scripture")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 1)
 		yield gobject.TYPE_STRING, column
@@ -91,6 +92,7 @@ class ScriptureBooksWindow(windows._base.ListWindow):
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Book")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 1)
 		yield gobject.TYPE_STRING, column
@@ -154,6 +156,7 @@ class ScriptureChaptersWindow(windows._base.ListWindow):
 
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Chapter")
+		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
 		column.add_attribute(textrenderer, "text", 1)
 		yield gobject.TYPE_STRING, column
