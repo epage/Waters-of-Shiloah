@@ -3,7 +3,6 @@
 
 """
 @bug Fix segfault on closing of window while playing
-@todo Add images for Magazines and Issues
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
 	@todo Track recent
 	@todo Persisted Pause
@@ -54,6 +53,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 		self._index = stream_index.AudioIndex()
 		self._player = player.Player(self._index)
 
+		self._store.start()
 		self._index.start()
 		try:
 			if not hildonize.IS_HILDON_SUPPORTED:
@@ -74,6 +74,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 			self._load_settings()
 		except:
 			self._index.stop()
+			self._store.stop()
 			raise
 
 	def _save_settings(self):
@@ -112,6 +113,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 			self._save_settings()
 
 			self._index.stop()
+			self._store.stop()
 
 			try:
 				self._deviceState.close()

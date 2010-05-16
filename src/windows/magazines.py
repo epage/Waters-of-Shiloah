@@ -52,13 +52,37 @@ class MagazinesWindow(windows._base.ListWindow):
 			return
 
 		self._hide_loading()
-		for programNode in programs:
+		for i, programNode in enumerate(programs):
 			program = programNode.get_properties()
 			img = self._store.get_pixbuf_from_store(self._store.STORE_LOOKUP["nomagazineimage"])
 			row = programNode, img, program["title"]
 			self._model.append(row)
 
+			programNode.get_children(self._create_on_issues(i), self._on_error)
+
 		self._select_row()
+
+	def _create_on_issues(self, row):
+		return lambda issues: self._on_issues(row, issues)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_issues(self, row, issues):
+		for issue in issues:
+			self._store.get_pixbuf_from_url(
+				issue.get_properties()["pictureURL"],
+				lambda pix: self._on_image(row, pix),
+				self._on_error,
+			)
+			break
+		else:
+			_moduleLogger.info("No issues for magazine %s" % row)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_image(self, row, pix):
+		treeiter = self._model.iter_nth_child(None, row)
+		self._model.set_value(treeiter, 1, pix)
+		treeiter = self._model.iter_nth_child(None, row)
+		self._model.row_changed((row, ), treeiter)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
@@ -128,12 +152,33 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 			row = programNode, img, program["title"]
 			self._model.append(row)
 
+			self._store.get_pixbuf_from_url(
+				program["pictureURL"],
+				self._create_on_image(programNode),
+				self._on_error,
+			)
+
 		self._select_row()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
 		self._hide_loading()
 		self._errorBanner.push_message(str(exception))
+
+	def _create_on_image(self, programNode):
+		return lambda pix: self._on_image(programNode, pix)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_image(self, childNode, pix):
+		for i, row in enumerate(self._model):
+			if row[0] is childNode:
+				break
+		else:
+			raise RuntimeError("Could not find %r" % childNode)
+		treeiter = self._model.iter_nth_child(None, i)
+		self._model.set_value(treeiter, 1, pix)
+		treeiter = self._model.iter_nth_child(None, i)
+		self._model.row_changed((i, ), treeiter)
 
 	def _window_from_node(self, node):
 		issuesWindow = MagazineArticlesWindow(self._player, self._store, node)

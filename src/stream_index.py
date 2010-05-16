@@ -33,7 +33,6 @@ class Connection(object):
 		if kwds is None:
 			kwds = {}
 
-		self._indexing.clear_tasks()
 		self._indexing.add_task(
 			getattr(self._backend, func),
 			args,
