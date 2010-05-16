@@ -341,8 +341,10 @@ class MagazineArticleWindow(windows._base.BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_update_seek(self):
+		if self._isDestroyed:
+			return False
 		self._seekbar.set_value(self._player.percent_elapsed * 100)
-		return True if not self._isDestroyed else False
+		return True
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_state_change(self, player, newState):
@@ -353,8 +355,9 @@ class MagazineArticleWindow(windows._base.BasicWindow):
 			self._updateSeek.start(seconds=1)
 		else:
 			self._seekbar.hide()
-			self._updateSeek.cancel()
-			self._updateSeek = None
+			if self._updateSeek is not None:
+				self._updateSeek.cancel()
+				self._updateSeek = None
 
 		if not self._presenterNavigation.is_active():
 			self._set_context(newState)
