@@ -187,9 +187,13 @@ class ListWindow(BasicWindow):
 			if column is not None:
 				self._treeView.append_column(column)
 
+		viewport = gtk.Viewport()
+		viewport.add(self._treeView)
+
 		self._treeScroller = gtk.ScrolledWindow()
-		self._treeScroller.add(self._treeView)
+		self._treeScroller.add(viewport)
 		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
+		self._treeScroller = hildonize.hildonize_scrollwindow(self._treeScroller)
 
 		self._separator = gtk.HSeparator()
 		self._playcontrol = playcontrol.NavControl(self._player, self._store)

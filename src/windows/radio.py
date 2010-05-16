@@ -61,9 +61,13 @@ class RadioWindow(windows._base.BasicWindow):
 		self._treeView.append_column(titleColumn)
 		self._treeView.get_selection().connect("changed", self._on_row_changed)
 
+		viewport = gtk.Viewport()
+		viewport.add(self._treeView)
+
 		self._treeScroller = gtk.ScrolledWindow()
-		self._treeScroller.add(self._treeView)
+		self._treeScroller.add(viewport)
 		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
+		self._treeScroller = hildonize.hildonize_scrollwindow(self._treeScroller)
 
 		self._presenter = presenter.StreamMiniPresenter(self._store)
 		self._presenterNavigation = presenter.NavigationBox()
