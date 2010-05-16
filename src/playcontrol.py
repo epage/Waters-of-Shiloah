@@ -35,7 +35,7 @@ class NavControl(gobject.GObject, go_utils.AutoSignal):
 
 		self._store = store
 
-		self._controlButton = store.get_image_from_store(store.STORE_LOOKUP["small_play"])
+		self._controlButton = store.get_image_from_store(store.STORE_LOOKUP["play"])
 
 		self._controlBox = presenter.NavigationBox()
 		self._controlBox.toplevel.add(self._controlButton)
@@ -64,11 +64,11 @@ class NavControl(gobject.GObject, go_utils.AutoSignal):
 
 	def _set_context(self, state):
 		if state == self._player.STATE_PLAY:
-			stateImage = self._store.STORE_LOOKUP["small_pause"]
+			stateImage = self._store.STORE_LOOKUP["pause"]
 			self._store.set_image_from_store(self._controlButton, stateImage)
 			self.toplevel.show()
 		elif state == self._player.STATE_PAUSE:
-			stateImage = self._store.STORE_LOOKUP["small_play"]
+			stateImage = self._store.STORE_LOOKUP["play"]
 			self._store.set_image_from_store(self._controlButton, stateImage)
 			self.toplevel.show()
 		elif state == self._player.STATE_STOP:
@@ -76,7 +76,7 @@ class NavControl(gobject.GObject, go_utils.AutoSignal):
 			self.toplevel.hide()
 		else:
 			_moduleLogger.info("Unhandled player state %s" % state)
-			stateImage = self._store.STORE_LOOKUP["small_pause"]
+			stateImage = self._store.STORE_LOOKUP["pause"]
 			self._store.set_image_from_store(self._controlButton, stateImage)
 
 	@property
@@ -101,30 +101,30 @@ class NavControl(gobject.GObject, go_utils.AutoSignal):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_navigating(self, widget, navState):
 		if navState == "down":
-			imageName = "small_home"
+			imageName = "home"
 		elif navState == "clicking":
 			if widget is self._controlBox:
 				if self._player.state == self._player.STATE_PLAY:
-					imageName = "small_pause_pressed"
+					imageName = "pause_pressed"
 				else:
-					imageName = "small_play_pressed"
+					imageName = "play_pressed"
 			else:
 				if self._player.state == self._player.STATE_PLAY:
-					imageName = "small_pause"
+					imageName = "pause"
 				else:
-					imageName = "small_play"
+					imageName = "play"
 		elif self._player.can_navigate:
 			if navState == "up":
-				imageName = "small_play"
+				imageName = "play"
 			elif navState == "left":
-				imageName = "small_next"
+				imageName = "next"
 			elif navState == "right":
-				imageName = "small_prev"
+				imageName = "prev"
 		else:
 			if self._player.state == self._player.STATE_PLAY:
-				imageName = "small_pause"
+				imageName = "pause"
 			else:
-				imageName = "small_play"
+				imageName = "play"
 
 		imagePath = self._store.STORE_LOOKUP[imageName]
 		self._store.set_image_from_store(self._controlButton, imagePath)
@@ -167,27 +167,27 @@ class PlayControl(object):
 		self._player.connect("state-change", self._on_player_state_change)
 		self._player.connect("title-change", self._on_player_nav_change)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["small_prev"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["prev"])
 		self._back = gtk.Button()
 		self._back.set_image(img)
 		self._back.connect("clicked", self._on_back_clicked)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["small_stop"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["stop"])
 		self._stop = gtk.Button()
 		self._stop.set_image(img)
 		self._stop.connect("clicked", self._on_stop_clicked)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["small_pause"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["pause"])
 		self._pause = gtk.Button()
 		self._pause.set_image(img)
 		self._pause.connect("clicked", self._on_pause_clicked)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["small_play"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["play"])
 		self._play = gtk.Button()
 		self._play.set_image(img)
 		self._play.connect("clicked", self._on_play_clicked)
 
-		img = store.get_image_from_store(store.STORE_LOOKUP["small_next"])
+		img = store.get_image_from_store(store.STORE_LOOKUP["next"])
 		self._next = gtk.Button()
 		self._next.set_image(img)
 		self._next.connect("clicked", self._on_next_clicked)
