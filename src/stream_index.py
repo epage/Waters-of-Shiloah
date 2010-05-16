@@ -151,22 +151,19 @@ class ParentNode(Node):
 
 	def __init__(self, connection, parent, data, id):
 		Node.__init__(self, connection, parent, data, id)
-		self._request = None
 
 	def is_leaf(self):
 		return False
 
 	def _get_children(self, on_success, on_error):
-		assert self._request is None
 		assert self._children is None
-		self._request = on_success, on_error
 
 		func, args, kwds = self._get_func()
 
 		self._connection.download(
 			func,
-			self._on_success,
-			self._on_error,
+			lambda data: self._on_success(data, on_success, on_error),
+			on_error,
 			args,
 			kwds,
 		)
@@ -178,9 +175,7 @@ class ParentNode(Node):
 		raise NotImplementedError()
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_success(self, data):
-		r = self._request
-		self._request = None
+	def _on_success(self, data, on_success, on_error):
 		try:
 			self._children = [
 				self._create_child(child, i)
@@ -189,15 +184,9 @@ class ParentNode(Node):
 		except Exception, e:
 			_moduleLogger.exception("Translating error")
 			self._children = None
-			r[1](e)
+			on_error(e)
 		else:
-			r[0](self._children)
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_error(self, error):
-		r = self._request
-		self._request = None
-		r[1](error)
+			on_success(self._children)
 
 
 class LeafNode(Node):
