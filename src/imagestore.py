@@ -36,11 +36,13 @@ class ImageStore(object):
 
 		"conferences": "conference.png",
 		"magazines": "magazines.png",
-		"more": "more.png",
 		"mormonmessages": "mormonmessages.png",
 		"radio": "radio.png",
 		"scriptures": "scriptures.png",
+
+		"more": "more.png",
 		"icon": "icon.png",
+		"nomagazineimage": "nomagazineimage.png",
 	}
 
 	def __init__(self, storePath, cachePath):

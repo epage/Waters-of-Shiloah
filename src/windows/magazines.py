@@ -26,10 +26,16 @@ class MagazinesWindow(windows._base.ListWindow):
 	def _get_columns(cls):
 		yield gobject.TYPE_PYOBJECT, None
 
+		pixrenderer = gtk.CellRendererPixbuf()
+		column = gtk.TreeViewColumn("Covers")
+		column.pack_start(pixrenderer, expand=True)
+		column.add_attribute(pixrenderer, "pixbuf", 1)
+		yield gobject.TYPE_OBJECT, column
+
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Magazine")
 		column.pack_start(textrenderer, expand=True)
-		column.add_attribute(textrenderer, "text", 1)
+		column.add_attribute(textrenderer, "text", 2)
 		yield gobject.TYPE_STRING, column
 
 	def _refresh(self):
@@ -48,7 +54,8 @@ class MagazinesWindow(windows._base.ListWindow):
 		self._hide_loading()
 		for programNode in programs:
 			program = programNode.get_properties()
-			row = programNode, program["title"]
+			img = self._store.get_pixbuf_from_store(self._store.STORE_LOOKUP["nomagazineimage"])
+			row = programNode, img, program["title"]
 			self._model.append(row)
 
 		self._select_row()
@@ -89,10 +96,16 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 	def _get_columns(cls):
 		yield gobject.TYPE_PYOBJECT, None
 
+		pixrenderer = gtk.CellRendererPixbuf()
+		column = gtk.TreeViewColumn("Covers")
+		column.pack_start(pixrenderer, expand=True)
+		column.add_attribute(pixrenderer, "pixbuf", 1)
+		yield gobject.TYPE_OBJECT, column
+
 		textrenderer = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Issue")
 		column.pack_start(textrenderer, expand=True)
-		column.add_attribute(textrenderer, "text", 1)
+		column.add_attribute(textrenderer, "text", 2)
 		yield gobject.TYPE_STRING, column
 
 	def _refresh(self):
@@ -111,7 +124,8 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 		self._hide_loading()
 		for programNode in programs:
 			program = programNode.get_properties()
-			row = programNode, program["title"]
+			img = self._store.get_pixbuf_from_store(self._store.STORE_LOOKUP["nomagazineimage"])
+			row = programNode, img, program["title"]
 			self._model.append(row)
 
 		self._select_row()
