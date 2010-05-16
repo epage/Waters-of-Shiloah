@@ -1,4 +1,4 @@
-# @todo Add icons to buttons/rows to indicate that the currently playing track is coming from that
+from __future__ import with_statement
 
 import ConfigParser
 import logging
@@ -49,10 +49,11 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 		),
 	}
 
-	def __init__(self, player, store):
+	def __init__(self, app, player, store):
 		gobject.GObject.__init__(self)
 		self._isDestroyed = False
 
+		self._app = app
 		self._player = player
 		self._store = store
 
@@ -67,7 +68,7 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 		self._window = gtk.Window()
 		go_utils.AutoSignal.__init__(self, self.window)
 		self._window.add(self._layout)
-		self._window = hildonize.hildonize_window(self, self._window)
+		self._window = hildonize.hildonize_window(self._app, self._window)
 
 		self._window.set_icon(self._store.get_pixbuf_from_store(self._store.STORE_LOOKUP["icon"]))
 		self._window.connect("key-press-event", self._on_key_press)
@@ -79,6 +80,7 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 		return self._window
 
 	def show(self):
+		hildonize.window_to_portrait(self._window)
 		self._window.show_all()
 
 	def save_settings(self, config, sectionName):
@@ -164,8 +166,8 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 
 class ListWindow(BasicWindow):
 
-	def __init__(self, player, store, node):
-		BasicWindow.__init__(self, player, store)
+	def __init__(self, app, player, store, node):
+		BasicWindow.__init__(self, app, player, store)
 		self._node = node
 
 		self.connect_auto(self._player, "title-change", self._on_player_title_change)

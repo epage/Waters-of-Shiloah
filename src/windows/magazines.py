@@ -18,8 +18,8 @@ _moduleLogger = logging.getLogger(__name__)
 
 class MagazinesWindow(windows._base.ListWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.ListWindow.__init__(self, player, store, node)
+	def __init__(self, app, player, store, node):
+		windows._base.ListWindow.__init__(self, app, player, store, node)
 		self._window.set_title(self._node.title)
 
 	@classmethod
@@ -90,7 +90,7 @@ class MagazinesWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		issuesWindow = MagazineIssuesWindow(self._player, self._store, node)
+		issuesWindow = MagazineIssuesWindow(self._app, self._player, self._store, node)
 		issuesWindow.window.set_modal(True)
 		issuesWindow.window.set_transient_for(self._window)
 		issuesWindow.window.set_default_size(*self._window.get_size())
@@ -112,8 +112,8 @@ gobject.type_register(MagazinesWindow)
 
 class MagazineIssuesWindow(windows._base.ListWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.ListWindow.__init__(self, player, store, node)
+	def __init__(self, app, player, store, node):
+		windows._base.ListWindow.__init__(self, app, player, store, node)
 		self._window.set_title(self._node.title)
 
 	@classmethod
@@ -181,7 +181,7 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 		self._model.row_changed((i, ), treeiter)
 
 	def _window_from_node(self, node):
-		issuesWindow = MagazineArticlesWindow(self._player, self._store, node)
+		issuesWindow = MagazineArticlesWindow(self._app, self._player, self._store, node)
 		issuesWindow.window.set_modal(True)
 		issuesWindow.window.set_transient_for(self._window)
 		issuesWindow.window.set_default_size(*self._window.get_size())
@@ -203,8 +203,8 @@ gobject.type_register(MagazineIssuesWindow)
 
 class MagazineArticlesWindow(windows._base.ListWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.ListWindow.__init__(self, player, store, node)
+	def __init__(self, app, player, store, node):
+		windows._base.ListWindow.__init__(self, app, player, store, node)
 		self._window.set_title(self._node.title)
 
 	@classmethod
@@ -244,7 +244,7 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		issuesWindow = MagazineArticleWindow(self._player, self._store, node)
+		issuesWindow = MagazineArticleWindow(self._app, self._player, self._store, node)
 		issuesWindow.window.set_modal(True)
 		issuesWindow.window.set_transient_for(self._window)
 		issuesWindow.window.set_default_size(*self._window.get_size())
@@ -266,8 +266,8 @@ gobject.type_register(MagazineArticlesWindow)
 
 class MagazineArticleWindow(windows._base.BasicWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.BasicWindow.__init__(self, player, store)
+	def __init__(self, app, player, store, node):
+		windows._base.BasicWindow.__init__(self, app, player, store)
 		self._node = node
 		self._playerNode = self._player.node
 		self._nextSearch = None

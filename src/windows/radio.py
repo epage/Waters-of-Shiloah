@@ -16,8 +16,8 @@ _moduleLogger = logging.getLogger(__name__)
 
 class RadioWindow(windows._base.BasicWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.BasicWindow.__init__(self, player, store)
+	def __init__(self, app, player, store, node):
+		windows._base.BasicWindow.__init__(self, app, player, store)
 		self._node = node
 		self._childNode = None
 

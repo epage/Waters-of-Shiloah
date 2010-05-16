@@ -18,8 +18,8 @@ _moduleLogger = logging.getLogger(__name__)
 
 class ScripturesWindow(windows._base.ListWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.ListWindow.__init__(self, player, store, node)
+	def __init__(self, app, player, store, node):
+		windows._base.ListWindow.__init__(self, app, player, store, node)
 		self._window.set_title(self._node.title)
 
 	@classmethod
@@ -59,7 +59,7 @@ class ScripturesWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		booksWindow = ScriptureBooksWindow(self._player, self._store, node)
+		booksWindow = ScriptureBooksWindow(self._app, self._player, self._store, node)
 		booksWindow.window.set_modal(True)
 		booksWindow.window.set_transient_for(self._window)
 		booksWindow.window.set_default_size(*self._window.get_size())
@@ -81,8 +81,8 @@ gobject.type_register(ScripturesWindow)
 
 class ScriptureBooksWindow(windows._base.ListWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.ListWindow.__init__(self, player, store, node)
+	def __init__(self, app, player, store, node):
+		windows._base.ListWindow.__init__(self, app, player, store, node)
 		self._window.set_title(self._node.title)
 
 	@classmethod
@@ -122,7 +122,7 @@ class ScriptureBooksWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		booksWindow = ScriptureChaptersWindow(self._player, self._store, node)
+		booksWindow = ScriptureChaptersWindow(self._app, self._player, self._store, node)
 		booksWindow.window.set_modal(True)
 		booksWindow.window.set_transient_for(self._window)
 		booksWindow.window.set_default_size(*self._window.get_size())
@@ -144,8 +144,8 @@ gobject.type_register(ScriptureBooksWindow)
 
 class ScriptureChaptersWindow(windows._base.ListWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.ListWindow.__init__(self, player, store, node)
+	def __init__(self, app, player, store, node):
+		windows._base.ListWindow.__init__(self, app, player, store, node)
 		self._window.set_title(self._node.title)
 
 	@classmethod
@@ -185,7 +185,7 @@ class ScriptureChaptersWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		booksWindow = ScriptureChapterWindow(self._player, self._store, node)
+		booksWindow = ScriptureChapterWindow(self._app, self._player, self._store, node)
 		booksWindow.window.set_modal(True)
 		booksWindow.window.set_transient_for(self._window)
 		booksWindow.window.set_default_size(*self._window.get_size())
@@ -207,8 +207,8 @@ gobject.type_register(ScriptureChaptersWindow)
 
 class ScriptureChapterWindow(windows._base.BasicWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.BasicWindow.__init__(self, player, store)
+	def __init__(self, app, player, store, node):
+		windows._base.BasicWindow.__init__(self, app, player, store)
 		self._node = node
 		self._playerNode = self._player.node
 		self._nextSearch = None
@@ -296,8 +296,9 @@ class ScriptureChapterWindow(windows._base.BasicWindow):
 			self._updateSeek.start(seconds=1)
 		else:
 			self._seekbar.hide()
-			self._updateSeek.cancel()
-			self._updateSeek = None
+			if self._updateSeek is not None:
+				self._updateSeek.cancel()
+				self._updateSeek = None
 
 		if not self._presenterNavigation.is_active():
 			self._set_context(newState)

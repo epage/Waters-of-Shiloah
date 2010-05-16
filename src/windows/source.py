@@ -17,8 +17,8 @@ _moduleLogger = logging.getLogger(__name__)
 
 class SourceSelector(windows._base.BasicWindow):
 
-	def __init__(self, player, store, index):
-		windows._base.BasicWindow.__init__(self, player, store)
+	def __init__(self, app, player, store, index):
+		windows._base.BasicWindow.__init__(self, app, player, store)
 		self._languages = []
 		self._index = index
 
@@ -117,7 +117,7 @@ class SourceSelector(windows._base.BasicWindow):
 			Source = windows.magazines.MagazinesWindow
 		elif node.id == stream_index.SOURCE_SCRIPTURES:
 			Source = windows.scriptures.ScripturesWindow
-		sourceWindow = Source(self._player, self._store, node)
+		sourceWindow = Source(self._app, self._player, self._store, node)
 		sourceWindow.window.set_modal(True)
 		sourceWindow.window.set_transient_for(self._window)
 		sourceWindow.window.set_default_size(*self._window.get_size())

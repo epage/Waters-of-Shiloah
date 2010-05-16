@@ -18,8 +18,8 @@ _moduleLogger = logging.getLogger(__name__)
 
 class ConferencesWindow(windows._base.ListWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.ListWindow.__init__(self, player, store, node)
+	def __init__(self, app, player, store, node):
+		windows._base.ListWindow.__init__(self, app, player, store, node)
 		self._window.set_title(self._node.title)
 
 	@classmethod
@@ -65,7 +65,7 @@ class ConferencesWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		sessionsWindow = ConferenceSessionsWindow(self._player, self._store, node)
+		sessionsWindow = ConferenceSessionsWindow(self._app, self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
@@ -87,8 +87,8 @@ gobject.type_register(ConferencesWindow)
 
 class ConferenceSessionsWindow(windows._base.ListWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.ListWindow.__init__(self, player, store, node)
+	def __init__(self, app, player, store, node):
+		windows._base.ListWindow.__init__(self, app, player, store, node)
 		self._window.set_title(self._node.title)
 
 	@classmethod
@@ -128,7 +128,7 @@ class ConferenceSessionsWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		sessionsWindow = ConferenceTalksWindow(self._player, self._store, node)
+		sessionsWindow = ConferenceTalksWindow(self._app, self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
@@ -150,8 +150,8 @@ gobject.type_register(ConferenceSessionsWindow)
 
 class ConferenceTalksWindow(windows._base.ListWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.ListWindow.__init__(self, player, store, node)
+	def __init__(self, app, player, store, node):
+		windows._base.ListWindow.__init__(self, app, player, store, node)
 		self._window.set_title(self._node.title)
 
 	@classmethod
@@ -191,7 +191,7 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		sessionsWindow = ConferenceTalkWindow(self._player, self._store, node)
+		sessionsWindow = ConferenceTalkWindow(self._app, self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
 		sessionsWindow.window.set_default_size(*self._window.get_size())
@@ -213,8 +213,8 @@ gobject.type_register(ConferenceTalksWindow)
 
 class ConferenceTalkWindow(windows._base.BasicWindow):
 
-	def __init__(self, player, store, node):
-		windows._base.BasicWindow.__init__(self, player, store)
+	def __init__(self, app, player, store, node):
+		windows._base.BasicWindow.__init__(self, app, player, store)
 		self._node = node
 		self._playerNode = self._player.node
 		self._nextSearch = None
@@ -302,8 +302,9 @@ class ConferenceTalkWindow(windows._base.BasicWindow):
 			self._updateSeek.start(seconds=1)
 		else:
 			self._seekbar.hide()
-			self._updateSeek.cancel()
-			self._updateSeek = None
+			if self._updateSeek is not None:
+				self._updateSeek.cancel()
+				self._updateSeek = None
 
 		if not self._presenterNavigation.is_active():
 			self._set_context(newState)
