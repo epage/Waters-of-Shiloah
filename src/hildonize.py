@@ -179,7 +179,7 @@ def _hildon_set_cell_thumb_selectable(renderer):
 
 
 def _null_set_cell_thumb_selectable(renderer):
-	pass
+	renderer.set_property("scale", 1.5)
 
 
 if IS_HILDON_SUPPORTED:

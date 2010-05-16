@@ -4,6 +4,7 @@ import logging
 import gobject
 import gtk
 
+import hildonize
 import util.misc as misc_utils
 import banners
 import presenter
@@ -46,6 +47,7 @@ class RadioWindow(windows._base.BasicWindow):
 		timeColumn.add_attribute(textrenderer, "text", 0)
 
 		textrenderer = gtk.CellRendererText()
+		hildonize.set_cell_thumb_selectable(textrenderer)
 		titleColumn = gtk.TreeViewColumn("Program")
 		titleColumn.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		titleColumn.pack_start(textrenderer, expand=True)

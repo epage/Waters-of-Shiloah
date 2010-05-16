@@ -27,6 +27,7 @@ class ScripturesWindow(windows._base.ListWindow):
 		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
+		hildonize.set_cell_thumb_selectable(textrenderer)
 		column = gtk.TreeViewColumn("Scripture")
 		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
@@ -91,6 +92,7 @@ class ScriptureBooksWindow(windows._base.ListWindow):
 		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
+		hildonize.set_cell_thumb_selectable(textrenderer)
 		column = gtk.TreeViewColumn("Book")
 		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
@@ -155,6 +157,7 @@ class ScriptureChaptersWindow(windows._base.ListWindow):
 		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
+		hildonize.set_cell_thumb_selectable(textrenderer)
 		column = gtk.TreeViewColumn("Chapter")
 		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)

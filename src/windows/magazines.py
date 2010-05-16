@@ -35,6 +35,7 @@ class MagazinesWindow(windows._base.ListWindow):
 		yield gobject.TYPE_OBJECT, column
 
 		textrenderer = gtk.CellRendererText()
+		hildonize.set_cell_thumb_selectable(textrenderer)
 		column = gtk.TreeViewColumn("Magazine")
 		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
@@ -132,6 +133,7 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 		yield gobject.TYPE_OBJECT, column
 
 		textrenderer = gtk.CellRendererText()
+		hildonize.set_cell_thumb_selectable(textrenderer)
 		column = gtk.TreeViewColumn("Issue")
 		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
@@ -218,6 +220,7 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
+		hildonize.set_cell_thumb_selectable(textrenderer)
 		column = gtk.TreeViewColumn("Article")
 		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
