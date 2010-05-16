@@ -2,6 +2,9 @@
 # -*- coding: utf-8 -*-
 
 """
+@bug Lists aren't pannable
+@bug Fix sizing of everything for Maemo
+@bug For some reason, the back/close button doesn't work when I nest multiple levels
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
 	@todo Track recent
 	@todo Persisted Pause
@@ -69,6 +72,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 			self._sourceSelector = windows.source.SourceSelector(self, self._player, self._store, self._index)
 			self._sourceSelector.window.connect("destroy", self._on_destroy)
+			self._sourceSelector.window.set_default_size(400, 800)
 			self._sourceSelector.show()
 			self._load_settings()
 		except:
