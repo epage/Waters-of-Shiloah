@@ -26,30 +26,22 @@ class SourceSelector(windows._base.BasicWindow):
 
 		self._radioButton = self._create_button("radio", "Radio")
 		self._radioButton.connect("clicked", self._on_source_selected, stream_index.SOURCE_RADIO)
-		self._radioWrapper = gtk.VBox()
-		self._radioWrapper.pack_start(self._radioButton, False, True)
 
 		self._conferenceButton = self._create_button("conferences", "Conferences")
 		self._conferenceButton.connect("clicked", self._on_source_selected, stream_index.SOURCE_CONFERENCES)
-		self._conferenceWrapper = gtk.VBox()
-		self._conferenceWrapper.pack_start(self._conferenceButton, False, True)
 
 		self._magazineButton = self._create_button("magazines", "Magazines")
 		self._magazineButton.connect("clicked", self._on_source_selected, stream_index.SOURCE_MAGAZINES)
-		self._magazineWrapper = gtk.VBox()
-		self._magazineWrapper.pack_start(self._magazineButton, False, True)
 
 		self._scriptureButton = self._create_button("scriptures", "Scriptures")
 		self._scriptureButton.connect("clicked", self._on_source_selected, stream_index.SOURCE_SCRIPTURES)
-		self._scriptureWrapper = gtk.VBox()
-		self._scriptureWrapper.pack_start(self._scriptureButton, False, True)
 
 		self._buttonLayout = gtk.VButtonBox()
 		self._buttonLayout.set_layout(gtk.BUTTONBOX_SPREAD)
-		self._buttonLayout.pack_start(self._radioWrapper, True, True)
-		self._buttonLayout.pack_start(self._conferenceWrapper, True, True)
-		self._buttonLayout.pack_start(self._magazineWrapper, True, True)
-		self._buttonLayout.pack_start(self._scriptureWrapper, True, True)
+		self._buttonLayout.pack_start(self._radioButton, True, True)
+		self._buttonLayout.pack_start(self._conferenceButton, True, True)
+		self._buttonLayout.pack_start(self._magazineButton, True, True)
+		self._buttonLayout.pack_start(self._scriptureButton, True, True)
 
 		self._separator = gtk.HSeparator()
 		self._playcontrol = playcontrol.NavControl(player, store)

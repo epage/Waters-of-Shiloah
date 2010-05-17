@@ -250,7 +250,9 @@ class ListWindow(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_row_activated(self, view, path, column):
-		raise NotImplementedError("")
+		itr = self._model.get_iter(path)
+		node = self._model.get_value(itr, 0)
+		self._window_from_node(node)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_title_change(self, player, node):

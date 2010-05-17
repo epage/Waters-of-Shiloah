@@ -71,12 +71,6 @@ class ScripturesWindow(windows._base.ListWindow):
 		booksWindow.show()
 		return booksWindow
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-		self._window_from_node(node)
-
 
 gobject.type_register(ScripturesWindow)
 
@@ -136,12 +130,6 @@ class ScriptureBooksWindow(windows._base.ListWindow):
 		booksWindow.show()
 		return booksWindow
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-		self._window_from_node(node)
-
 
 gobject.type_register(ScriptureBooksWindow)
 
@@ -200,12 +188,6 @@ class ScriptureChaptersWindow(windows._base.ListWindow):
 		booksWindow.connect("jump-to", self._on_jump)
 		booksWindow.show()
 		return booksWindow
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-		self._window_from_node(node)
 
 
 gobject.type_register(ScriptureChaptersWindow)

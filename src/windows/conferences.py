@@ -27,6 +27,7 @@ class ConferencesWindow(windows._base.ListWindow):
 		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
+		textrenderer.set_property("scale", 0.75)
 		column = gtk.TreeViewColumn("Date")
 		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.set_property("fixed-width", 96)
@@ -78,12 +79,6 @@ class ConferencesWindow(windows._base.ListWindow):
 		sessionsWindow.connect("jump-to", self._on_jump)
 		sessionsWindow.show()
 		return sessionsWindow
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-		self._window_from_node(node)
 
 
 gobject.type_register(ConferencesWindow)
@@ -144,12 +139,6 @@ class ConferenceSessionsWindow(windows._base.ListWindow):
 		sessionsWindow.show()
 		return sessionsWindow
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-		self._window_from_node(node)
-
 
 gobject.type_register(ConferenceSessionsWindow)
 
@@ -165,11 +154,10 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
-		hildonize.set_cell_thumb_selectable(textrenderer)
 		column = gtk.TreeViewColumn("Talk")
 		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
-		column.add_attribute(textrenderer, "text", 1)
+		column.add_attribute(textrenderer, "markup", 1)
 		yield gobject.TYPE_STRING, column
 
 	def _refresh(self):
@@ -188,7 +176,7 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 		self._hide_loading()
 		for programNode in programs:
 			program = programNode.get_properties()
-			row = programNode, "%s\n%s" % (program["title"], program["speaker"])
+			row = programNode, "%s\n<small>%s</small>" % (programNode.title, programNode.subtitle)
 			self._model.append(row)
 
 		self._select_row()
@@ -208,12 +196,6 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 		sessionsWindow.connect("jump-to", self._on_jump)
 		sessionsWindow.show()
 		return sessionsWindow
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-		self._window_from_node(node)
 
 
 gobject.type_register(ConferenceTalksWindow)

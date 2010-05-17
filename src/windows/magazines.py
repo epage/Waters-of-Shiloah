@@ -104,12 +104,6 @@ class MagazinesWindow(windows._base.ListWindow):
 		issuesWindow.show()
 		return issuesWindow
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-		self._window_from_node(node)
-
 
 gobject.type_register(MagazinesWindow)
 
@@ -199,12 +193,6 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 		issuesWindow.show()
 		return issuesWindow
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-		self._window_from_node(node)
-
 
 gobject.type_register(MagazineIssuesWindow)
 
@@ -220,11 +208,10 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 		yield gobject.TYPE_PYOBJECT, None
 
 		textrenderer = gtk.CellRendererText()
-		hildonize.set_cell_thumb_selectable(textrenderer)
 		column = gtk.TreeViewColumn("Article")
 		column.set_property("sizing", gtk.TREE_VIEW_COLUMN_FIXED)
 		column.pack_start(textrenderer, expand=True)
-		column.add_attribute(textrenderer, "text", 1)
+		column.add_attribute(textrenderer, "markup", 1)
 		yield gobject.TYPE_STRING, column
 
 	def _refresh(self):
@@ -243,7 +230,7 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 		self._hide_loading()
 		for programNode in programs:
 			program = programNode.get_properties()
-			row = programNode, "%s\n%s" % (program["title"], program["author"])
+			row = programNode, "%s\n<small>%s</small>" % (programNode.title, programNode.subtitle)
 			self._model.append(row)
 
 		self._select_row()
@@ -263,12 +250,6 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 		issuesWindow.connect("jump-to", self._on_jump)
 		issuesWindow.show()
 		return issuesWindow
-
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_row_activated(self, view, path, column):
-		itr = self._model.get_iter(path)
-		node = self._model.get_value(itr, 0)
-		self._window_from_node(node)
 
 
 gobject.type_register(MagazineArticlesWindow)

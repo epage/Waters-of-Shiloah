@@ -2,7 +2,10 @@
 # -*- coding: utf-8 -*-
 
 """
+@todo Timezone issue with Mormon CHannel
+@todo Fix scrollto for Fremantle
 @todo backgrounds need some resizing
+@todo Icons on source selector need work
 @bug For some reason, the back/close button doesn't work when I nest multiple levels
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
 	@todo Track recent
