@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo Timezone issue with Mormon CHannel
 @todo Fix scrollto for Fremantle
 @todo backgrounds need some resizing
 @todo Icons on source selector need work

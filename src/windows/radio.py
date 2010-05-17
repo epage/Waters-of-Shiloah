@@ -6,6 +6,7 @@ import gtk
 
 import hildonize
 import util.misc as misc_utils
+import util.time_utils as time_utils
 import banners
 import presenter
 
@@ -83,7 +84,7 @@ class RadioWindow(windows._base.BasicWindow):
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._radioLayout, True, True)
 
-		self._dateShown = datetime.datetime.now()
+		self._dateShown = datetime.datetime.now(tz=time_utils.Mountain)
 		self._update_title()
 
 	def show(self):
