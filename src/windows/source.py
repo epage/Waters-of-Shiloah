@@ -80,7 +80,8 @@ class SourceSelector(windows._base.BasicWindow):
 		image = self._store.get_image_from_store(self._store.STORE_LOOKUP[icon])
 
 		label = gtk.Label()
-		label.set_text(message)
+		label.set_use_markup(True)
+		label.set_markup("<big>%s</big>" % message)
 
 		buttonLayout = gtk.HBox(False, 5)
 		buttonLayout.pack_start(image, False, False)
