@@ -180,8 +180,6 @@ class StreamPresenter(object):
 	def _draw_presenter(self, cairoContext):
 		rect = self._image.get_allocation()
 		self._dims = rect.width, rect.height
-		startContent = 30, self._dims[1] - 125
-		endContent = self._dims[0] - 30,  self._dims[1] - 5
 
 		# Blank things
 		cairoContext.rectangle(
@@ -202,6 +200,23 @@ class StreamPresenter(object):
 			)
 			cairoContext.paint()
 
+		pangoContext = self._image.create_pango_context()
+
+		titleLayout = pango.Layout(pangoContext)
+		titleLayout.set_markup(self._subtitle)
+		textWidth, textHeight = titleLayout.get_pixel_size()
+		subtitleTextX = self._dims[0] / 2 - textWidth / 2
+		subtitleTextY = self._dims[1] - textHeight - self._buttonImage.get_height() + 10
+
+		subtitleLayout = pango.Layout(pangoContext)
+		subtitleLayout.set_markup(self._title)
+		textWidth, textHeight = subtitleLayout.get_pixel_size()
+		textX = self._dims[0] / 2 - textWidth / 2
+		textY = subtitleTextY - textHeight
+
+		startContent = 30, textY - 5
+		endContent = self._dims[0] - 30,  self._dims[1] - 5
+
 		# Control background
 		cairoContext.rectangle(
 			startContent[0],
@@ -214,24 +229,13 @@ class StreamPresenter(object):
 
 		# title
 		if self._title or self._subtitle:
-			pangoContext = self._image.create_pango_context()
-			textLayout = pango.Layout(pangoContext)
-
-			textLayout.set_markup(self._subtitle)
-			textWidth, textHeight = textLayout.get_pixel_size()
-			subtitleTextX = self._dims[0] / 2 - textWidth / 2
-			subtitleTextY = self._dims[1] - textHeight - self._buttonImage.get_height() + 10
 			cairoContext.move_to(subtitleTextX, subtitleTextY)
 			cairoContext.set_source_rgb(0, 0, 0)
-			cairoContext.show_layout(textLayout)
+			cairoContext.show_layout(titleLayout)
 
-			textLayout.set_markup(self._title)
-			textWidth, textHeight = textLayout.get_pixel_size()
-			textX = self._dims[0] / 2 - textWidth / 2
-			textY = subtitleTextY - textHeight
 			cairoContext.move_to(textX, textY)
 			cairoContext.set_source_rgb(0, 0, 0)
-			cairoContext.show_layout(textLayout)
+			cairoContext.show_layout(subtitleLayout)
 
 		self._draw_state(cairoContext)
 
