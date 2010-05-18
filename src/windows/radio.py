@@ -7,6 +7,7 @@ import gtk
 import hildonize
 import util.misc as misc_utils
 import util.time_utils as time_utils
+import util.go_utils as go_utils
 import banners
 import presenter
 
@@ -62,11 +63,11 @@ class RadioWindow(windows._base.BasicWindow):
 		self._treeView.append_column(titleColumn)
 		self._treeView.get_selection().connect("changed", self._on_row_changed)
 
-		viewport = gtk.Viewport()
-		viewport.add(self._treeView)
+		self._viewport = gtk.Viewport()
+		self._viewport.add(self._treeView)
 
 		self._treeScroller = gtk.ScrolledWindow()
-		self._treeScroller.add(viewport)
+		self._treeScroller.add(self._viewport)
 		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
 		self._treeScroller = hildonize.hildonize_scrollwindow(self._treeScroller)
 
@@ -249,9 +250,12 @@ class RadioWindow(windows._base.BasicWindow):
 			self._treeView.get_selection().set_mode(gtk.SELECTION_NONE)
 		else:
 			self._treeView.get_selection().set_mode(gtk.SELECTION_SINGLE)
-			path = (self._get_current_row(), )
-			self._treeView.scroll_to_cell(path)
-			self._treeView.get_selection().select_path(path)
+			self._select_row()
+			go_utils.Async(self._on_delay_scroll).start()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_delay_scroll(self, *args):
+		self._scroll_to_row()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_load_error(self, exception):
@@ -263,11 +267,40 @@ class RadioWindow(windows._base.BasicWindow):
 		if len(self._programmingModel) == 0:
 			return
 
+		# Undo the user's changing of the selection
+		self._select_row()
+
+	def _select_row(self):
 		rowIndex = self._get_current_row()
+		if rowIndex < 0:
+			return
 		path = (rowIndex, )
-		if not selection.path_is_selected(path):
-			# Undo the user's changing of the selection
-			selection.select_path(path)
+		if not self._treeView.get_selection().path_is_selected(path):
+			self._treeView.get_selection().select_path(path)
+
+	def _scroll_to_row(self):
+		if self._isDestroyed:
+			return
+		rowIndex = self._get_current_row()
+		if rowIndex < 0:
+			return
+
+		path = (rowIndex, )
+		self._treeView.scroll_to_cell(path)
+
+		treeViewHeight = self._treeView.get_allocation().height
+		viewportHeight = self._viewport.get_allocation().height
+
+		viewsPerPort = treeViewHeight / float(viewportHeight)
+		maxRows = len(self._programmingModel)
+		percentThrough = rowIndex / float(maxRows)
+		dxByIndex = int(viewsPerPort * percentThrough * viewportHeight)
+
+		dxMax = max(treeViewHeight - viewportHeight, 0)
+
+		dx = min(dxByIndex, dxMax)
+		adjustment = self._treeScroller.get_vadjustment()
+		adjustment.value = dx
 
 
 gobject.type_register(RadioWindow)

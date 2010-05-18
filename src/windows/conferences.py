@@ -62,6 +62,7 @@ class ConferencesWindow(windows._base.ListWindow):
 			self._model.append(row)
 
 		self._select_row()
+		go_utils.Async(self._on_delay_scroll).start()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
@@ -121,6 +122,7 @@ class ConferenceSessionsWindow(windows._base.ListWindow):
 			self._model.append(row)
 
 		self._select_row()
+		go_utils.Async(self._on_delay_scroll).start()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
@@ -179,6 +181,7 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 			self._model.append(row)
 
 		self._select_row()
+		go_utils.Async(self._on_delay_scroll).start()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):

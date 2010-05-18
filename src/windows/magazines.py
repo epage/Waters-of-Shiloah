@@ -65,6 +65,7 @@ class MagazinesWindow(windows._base.ListWindow):
 			programNode.get_children(self._create_on_issues(i), self._on_error)
 
 		self._select_row()
+		go_utils.Async(self._on_delay_scroll).start()
 
 	def _create_on_issues(self, row):
 		return lambda issues: self._on_issues(row, issues)
@@ -161,6 +162,7 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 			)
 
 		self._select_row()
+		go_utils.Async(self._on_delay_scroll).start()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
@@ -234,6 +236,7 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 			self._model.append(row)
 
 		self._select_row()
+		go_utils.Async(self._on_delay_scroll).start()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):

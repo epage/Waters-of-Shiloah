@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo Fix scrollto for Fremantle
 @todo backgrounds need some resizing
 @todo Re-use windows for better performance
 @bug For some reason, the back/close button doesn't work when I nest multiple levels

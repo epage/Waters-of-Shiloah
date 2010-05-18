@@ -188,11 +188,11 @@ class ListWindow(BasicWindow):
 			if column is not None:
 				self._treeView.append_column(column)
 
-		viewport = gtk.Viewport()
-		viewport.add(self._treeView)
+		self._viewport = gtk.Viewport()
+		self._viewport.add(self._treeView)
 
 		self._treeScroller = gtk.ScrolledWindow()
-		self._treeScroller.add(viewport)
+		self._treeScroller.add(self._viewport)
 		self._treeScroller.set_policy(gtk.POLICY_NEVER, gtk.POLICY_AUTOMATIC)
 		self._treeScroller = hildonize.hildonize_scrollwindow(self._treeScroller)
 
@@ -274,6 +274,10 @@ class ListWindow(BasicWindow):
 		window = self._window_from_node(child)
 		window.jump_to(node)
 
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_delay_scroll(self, *args):
+		self._scroll_to_row()
+
 	def _show_loading(self):
 		animationPath = self._store.STORE_LOOKUP["loading"]
 		animation = self._store.get_pixbuf_animation_from_store(animationPath)
@@ -291,8 +295,29 @@ class ListWindow(BasicWindow):
 		if rowIndex < 0:
 			return
 		path = (rowIndex, )
-		self._treeView.scroll_to_cell(path)
 		self._treeView.get_selection().select_path(path)
+
+	def _scroll_to_row(self):
+		rowIndex = self._get_current_row()
+		if rowIndex < 0:
+			return
+
+		path = (rowIndex, )
+		self._treeView.scroll_to_cell(path)
+
+		treeViewHeight = self._treeView.get_allocation().height
+		viewportHeight = self._viewport.get_allocation().height
+
+		viewsPerPort = treeViewHeight / float(viewportHeight)
+		maxRows = len(self._model)
+		percentThrough = rowIndex / float(maxRows)
+		dxByIndex = int(viewsPerPort * percentThrough * viewportHeight)
+
+		dxMax = max(treeViewHeight - viewportHeight, 0)
+
+		dx = min(dxByIndex, dxMax)
+		adjustment = self._treeScroller.get_vadjustment()
+		adjustment.value = dx
 
 
 class PresenterWindow(BasicWindow):
