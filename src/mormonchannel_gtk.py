@@ -109,25 +109,25 @@ class MormonChannelProgram(hildonize.get_app_class()):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_destroy(self, widget = None, data = None):
-		self.quit()
-
-	def quit(self):
 		try:
-			self._save_settings()
-
-			self._index.stop()
-			self._store.stop()
-
-			try:
-				self._deviceState.close()
-			except AttributeError:
-				pass # Either None or close was removed (in Fremantle)
-			try:
-				self._osso_c.close()
-			except AttributeError:
-				pass # Either None or close was removed (in Fremantle)
+			self.quit()
 		finally:
 			gtk.main_quit()
+
+	def quit(self):
+		self._save_settings()
+
+		self._index.stop()
+		self._store.stop()
+
+		try:
+			self._deviceState.close()
+		except AttributeError:
+			pass # Either None or close was removed (in Fremantle)
+		try:
+			self._osso_c.close()
+		except AttributeError:
+			pass # Either None or close was removed (in Fremantle)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_show_about(self, widget = None, data = None):
@@ -157,6 +157,8 @@ def run():
 		except KeyboardInterrupt:
 			app.quit()
 			raise
+	else:
+		app.quit()
 
 
 if __name__ == "__main__":
