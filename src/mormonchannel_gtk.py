@@ -117,6 +117,7 @@ class MormonChannelProgram(hildonize.get_app_class()):
 	def quit(self):
 		self._save_settings()
 
+		self._player.stop()
 		self._index.stop()
 		self._store.stop()
 
