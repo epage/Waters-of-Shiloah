@@ -143,6 +143,7 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 			event.get_state() & gtk.gdk.CONTROL_MASK
 		):
 			self.emit("quit")
+			self._window.destroy()
 		elif event.keyval == gtk.keysyms.l and event.get_state() & gtk.gdk.CONTROL_MASK:
 			with open(constants._user_logpath_, "r") as f:
 				logLines = f.xreadlines()
