@@ -68,7 +68,7 @@ class GSTStream(gobject.GObject):
 	def set_file(self, uri):
 		if self._uri != file:
 			self._invalidate_cache()
-		if self.playing:
+		if self.state != self.STATE_STOP:
 			self.stop()
 
 		self._uri = uri

@@ -425,9 +425,9 @@ class PresenterWindow(BasicWindow):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_title_change(self, player, node):
 		if not self._active or node in [None, self._node]:
-			self._playerNode = player.node
+			self._playerNode = node
 			return
-		self._playerNode = player.node
+		self._playerNode = node
 		self.emit("jump-to", node)
 		self._window.destroy()
 
