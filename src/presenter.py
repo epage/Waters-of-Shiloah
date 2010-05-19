@@ -59,16 +59,10 @@ class NavigationBox(gobject.GObject):
 		if self._clickPosition == self._NO_POSITION:
 			return ""
 
-		if self._isPortrait:
-			delta = (
-				newCoord[0] - self._clickPosition[0],
-				- (newCoord[1] - self._clickPosition[1])
-			)
-		else:
-			delta = (
-				newCoord[1] - self._clickPosition[1],
-				- (newCoord[0] - self._clickPosition[0])
-			)
+		delta = (
+			newCoord[0] - self._clickPosition[0],
+			- (newCoord[1] - self._clickPosition[1])
+		)
 		absDelta = (abs(delta[0]), abs(delta[1]))
 		if max(*absDelta) < self.MINIMUM_MOVEMENT:
 			return "clicking"
@@ -160,12 +154,8 @@ class StreamPresenter(object):
 		self._title = title
 		self._subtitle = subtitle
 
-		if self._isPortrait:
-			backWidth = self._backgroundImage.get_width()
-			backHeight = self._backgroundImage.get_height()
-		else:
-			backHeight = self._backgroundImage.get_width()
-			backWidth = self._backgroundImage.get_height()
+		backWidth = self._backgroundImage.get_width()
+		backHeight = self._backgroundImage.get_height()
 		self._image.set_size_request(backWidth, backHeight)
 
 		self._image.queue_draw()
@@ -173,8 +163,6 @@ class StreamPresenter(object):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_expose(self, widget, event):
 		cairoContext = self._image.window.cairo_create()
-		if not self._isPortrait:
-			cairoContext.transform(cairo.Matrix(0, 1, 1, 0, 0, 0))
 		self._draw_presenter(cairoContext)
 
 	def _draw_presenter(self, cairoContext):
