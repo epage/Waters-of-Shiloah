@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo backgrounds need some resizing
 @todo Re-use windows for better performance
 @bug For some reason, the back/close button doesn't work when I nest multiple levels
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
