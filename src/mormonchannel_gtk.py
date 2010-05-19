@@ -150,7 +150,7 @@ def run():
 	gtk.gdk.threads_init()
 	l = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
-	hildonize.set_application_title(constants.__pretty_app_name__)
+	hildonize.set_application_name("FMRadio") # Playback while silent on Maemo 5
 	app = MormonChannelProgram()
 	if not PROFILE_STARTUP:
 		try:

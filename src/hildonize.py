@@ -47,24 +47,26 @@ except AttributeError:
 	get_app_class = _null_get_app_class
 
 
-def _hildon_set_application_title(title):
-	gtk.set_application_name(title)
+def _hildon_set_application_name(name):
+	gtk.set_application_name(name)
 
 
-def _null_set_application_title(title):
+def _null_set_application_name(name):
 	pass
 
 
-if IS_HILDON_SUPPORTED:
-	set_application_title = _hildon_set_application_title
-else:
-	set_application_title = _null_set_application_title
+try:
+	gtk.set_application_name
+	set_application_name = _hildon_set_application_name
+except AttributeError:
+	set_application_name = _null_set_application_name
 
 
 def _fremantle_hildonize_window(app, window):
 	oldWindow = window
 	newWindow = hildon.StackableWindow()
-	oldWindow.get_child().reparent(newWindow)
+	if oldWindow.get_child() is not None:
+		oldWindow.get_child().reparent(newWindow)
 	app.add_window(newWindow)
 	return newWindow
 
@@ -72,7 +74,8 @@ def _fremantle_hildonize_window(app, window):
 def _hildon_hildonize_window(app, window):
 	oldWindow = window
 	newWindow = hildon.Window()
-	oldWindow.get_child().reparent(newWindow)
+	if oldWindow.get_child() is not None:
+		oldWindow.get_child().reparent(newWindow)
 	app.add_window(newWindow)
 	return newWindow
 
