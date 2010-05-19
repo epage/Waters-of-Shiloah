@@ -191,19 +191,21 @@ class StreamPresenter(object):
 		pangoContext = self._image.create_pango_context()
 
 		titleLayout = pango.Layout(pangoContext)
-		titleLayout.set_markup(self._subtitle)
+		titleLayout.set_markup("<i>%s</i>" % self._subtitle)
 		textWidth, textHeight = titleLayout.get_pixel_size()
 		subtitleTextX = self._dims[0] / 2 - textWidth / 2
 		subtitleTextY = self._dims[1] - textHeight - self._buttonImage.get_height() + 10
 
 		subtitleLayout = pango.Layout(pangoContext)
-		subtitleLayout.set_markup(self._title)
+		subtitleLayout.set_markup("<b>%s</b>" % self._title)
 		textWidth, textHeight = subtitleLayout.get_pixel_size()
 		textX = self._dims[0] / 2 - textWidth / 2
 		textY = subtitleTextY - textHeight
 
-		startContent = 30, textY - 5
-		endContent = self._dims[0] - 30,  self._dims[1] - 5
+		xPadding = min((self._dims[0] - textWidth) / 2 - 5, 5)
+		yPadding = 5
+		startContent = xPadding, textY - yPadding
+		endContent = self._dims[0] - xPadding,  self._dims[1] - yPadding
 
 		# Control background
 		cairoContext.rectangle(
