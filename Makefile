@@ -1,7 +1,7 @@
 PROJECT_NAME=MormonChannel
 SOURCE_PATH=src
 SOURCE=$(shell find $(SOURCE_PATH) -iname "*.py")
-PROGRAM=$(SOURCE_PATH)/$(PROJECT_NAME).py
+PROGRAM=$(SOURCE_PATH)/mormonchannel_gtk.py
 DATA_TYPES=*.ini *.map *.glade *.png
 DATA=$(foreach type, $(DATA_TYPES), $(shell find $(SOURCE_PATH) -iname "$(type)"))
 OBJ=$(SOURCE:.py=.pyc)
@@ -25,7 +25,7 @@ CTAGS=ctags-exuberant
 all: test
 
 run: $(OBJ)
-	$(SOURCE_PATH)/$(PROJECT_NAME).py
+	$(PROGRAM)
 
 profile: $(OBJ)
 	$(PROFILE_GEN) $(PROGRAM)
