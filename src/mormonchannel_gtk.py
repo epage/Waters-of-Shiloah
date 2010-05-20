@@ -5,9 +5,9 @@
 @bug For some reason, the back/close button doesn't work when I nest multiple levels
 @bug When switching from conference to magazines, it randomly jumps around and duplicates windows
 @bug fullscreen does not propgate
-@todo Update the program time shown
 
 @todo Re-use windows for better performance
+@todo Make radio program updates only happen when the app has focus to reduce CPU wakes
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
 	@todo Track recent
 	@todo Persisted Pause

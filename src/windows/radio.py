@@ -86,7 +86,11 @@ class RadioWindow(windows._base.BasicWindow):
 		self._layout.pack_start(self._radioLayout, True, True)
 
 		self._dateShown = datetime.datetime.now(tz=time_utils.Mountain)
+		self._currentTime = self._dateShown
 		self._update_title()
+
+		self._continualUpdate = go_utils.Timeout(self._on_continual_update, once = False)
+		self._continualUpdate.start(seconds=60)
 
 	def show(self):
 		windows._base.BasicWindow.show(self)
@@ -98,6 +102,15 @@ class RadioWindow(windows._base.BasicWindow):
 
 	def jump_to(self, node):
 		_moduleLogger.info("Only 1 channel, nothing to jump to")
+
+	def _update_time(self, newTime):
+		oldTime = self._dateShown
+		self._dateShown = newTime
+		if newTime.date() == oldTime.date():
+			self._select_row()
+		else:
+			self._update_title()
+			self._refresh()
 
 	def _update_title(self):
 		self._window.set_title("%s - %s" % (self._node.title, self._dateShown.strftime("%m/%d")))
@@ -148,6 +161,20 @@ class RadioWindow(windows._base.BasicWindow):
 					return i - 1
 		else:
 			return i
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_continual_update(self, *args):
+		if self._isDestroyed:
+			return False
+		newTime = datetime.datetime.now(tz=time_utils.Mountain)
+		oldTime = self._currentTime
+		shownTime = self._dateShown
+
+		self._currentTime = newTime
+		if shownTime.date() == oldTime.date():
+			_moduleLogger.info("Today selected, updating selection")
+			self._update_time(newTime)
+		return True
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_state_change(self, player, newState):
@@ -210,13 +237,9 @@ class RadioWindow(windows._base.BasicWindow):
 		elif navState == "up":
 			pass
 		elif navState == "left":
-			self._dateShown += datetime.timedelta(days=1)
-			self._update_title()
-			self._refresh()
+			self._update_time(self._dateShown + datetime.timedelta(days=1))
 		elif navState == "right":
-			self._dateShown -= datetime.timedelta(days=1)
-			self._update_title()
-			self._refresh()
+			self._update_time(self._dateShown - datetime.timedelta(days=1))
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_channels(self, channels):
@@ -245,7 +268,7 @@ class RadioWindow(windows._base.BasicWindow):
 			row = program["time"], program["title"]
 			self._programmingModel.append(row)
 
-		currentDate = datetime.datetime.now()
+		currentDate = self._currentTime
 		if currentDate.date() != self._dateShown.date():
 			self._treeView.get_selection().set_mode(gtk.SELECTION_NONE)
 		else:
