@@ -2,8 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo Re-use windows for better performance
 @bug For some reason, the back/close button doesn't work when I nest multiple levels
+@bug When switching from conference to magazines, it randomly jumps around and duplicates windows
+@bug fullscreen does not propgate
+@todo Update the program time shown
+
+@todo Re-use windows for better performance
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
 	@todo Track recent
 	@todo Persisted Pause
@@ -11,6 +15,7 @@
 @todo Sleep timer
 @todo Reverse order option.  Toggle between playing ascending/descending chronological order
 @todo Podcast integration
+	@todo Default with BYU Devotionals, http://speeches.byu.edu/?act=help&page=podcast
 """
 
 from __future__ import with_statement
