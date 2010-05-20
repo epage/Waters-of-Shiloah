@@ -6,9 +6,6 @@ import gtk
 import hildonize
 import util.go_utils as go_utils
 import util.misc as misc_utils
-import banners
-import presenter
-import stream_index
 
 import windows
 
@@ -65,10 +62,14 @@ class ScripturesWindow(windows._base.ListWindow):
 		booksWindow = ScriptureBooksWindow(self._app, self._player, self._store, node)
 		booksWindow.window.set_modal(True)
 		booksWindow.window.set_transient_for(self._window)
-		booksWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			booksWindow.window.fullscreen()
+		else:
+			booksWindow.window.unfullscreen()
 		booksWindow.connect("quit", self._on_quit)
 		booksWindow.connect("home", self._on_home)
 		booksWindow.connect("jump-to", self._on_jump)
+		booksWindow.connect("fullscreen", self._on_child_fullscreen)
 		booksWindow.show()
 		return booksWindow
 
@@ -125,10 +126,14 @@ class ScriptureBooksWindow(windows._base.ListWindow):
 		booksWindow = ScriptureChaptersWindow(self._app, self._player, self._store, node)
 		booksWindow.window.set_modal(True)
 		booksWindow.window.set_transient_for(self._window)
-		booksWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			booksWindow.window.fullscreen()
+		else:
+			booksWindow.window.unfullscreen()
 		booksWindow.connect("quit", self._on_quit)
 		booksWindow.connect("home", self._on_home)
 		booksWindow.connect("jump-to", self._on_jump)
+		booksWindow.connect("fullscreen", self._on_child_fullscreen)
 		booksWindow.show()
 		return booksWindow
 
@@ -185,10 +190,14 @@ class ScriptureChaptersWindow(windows._base.ListWindow):
 		booksWindow = ScriptureChapterWindow(self._app, self._player, self._store, node)
 		booksWindow.window.set_modal(True)
 		booksWindow.window.set_transient_for(self._window)
-		booksWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			booksWindow.window.fullscreen()
+		else:
+			booksWindow.window.unfullscreen()
 		booksWindow.connect("quit", self._on_quit)
 		booksWindow.connect("home", self._on_home)
 		booksWindow.connect("jump-to", self._on_jump)
+		booksWindow.connect("fullscreen", self._on_child_fullscreen)
 		booksWindow.show()
 		return booksWindow
 

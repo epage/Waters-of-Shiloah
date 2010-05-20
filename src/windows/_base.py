@@ -90,7 +90,7 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 
 	def load_settings(self, config, sectionName):
 		try:
-			self._windowInFullscreen = config.getboolean(sectionName, "fullscreen")
+			windowInFullscreen = config.getboolean(sectionName, "fullscreen")
 		except ConfigParser.NoSectionError, e:
 			_moduleLogger.info(
 				"Settings file %s is missing section %s" % (
@@ -99,7 +99,7 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 				)
 			)
 
-		if self._windowInFullscreen:
+		if windowInFullscreen:
 			self._window.fullscreen()
 		else:
 			self._window.unfullscreen()
@@ -113,11 +113,14 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_window_state_change(self, widget, event, *args):
+		oldIsFull = self._windowInFullscreen
 		if event.new_window_state & gtk.gdk.WINDOW_STATE_FULLSCREEN:
 			self._windowInFullscreen = True
 		else:
 			self._windowInFullscreen = False
-		self.emit("fullscreen", self._windowInFullscreen)
+		if oldIsFull != self._windowInFullscreen:
+			_moduleLogger.info("%r Emit fullscreen %s" % (self, self._windowInFullscreen))
+			self.emit("fullscreen", self._windowInFullscreen)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_key_press(self, widget, event, *args):
@@ -155,6 +158,15 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 	def _on_home(self, *args):
 		self.emit("home")
 		self._window.destroy()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_child_fullscreen(self, source, isFull):
+		if isFull:
+			_moduleLogger.info("Full screen %r to mirror child %r" % (self, source))
+			self._window.fullscreen()
+		else:
+			_moduleLogger.info("Unfull screen %r to mirror child %r" % (self, source))
+			self._window.unfullscreen()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_jump(self, source, node):

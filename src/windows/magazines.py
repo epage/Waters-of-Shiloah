@@ -6,9 +6,6 @@ import gtk
 import hildonize
 import util.go_utils as go_utils
 import util.misc as misc_utils
-import banners
-import presenter
-import stream_index
 
 import windows
 
@@ -98,10 +95,14 @@ class MagazinesWindow(windows._base.ListWindow):
 		issuesWindow = MagazineIssuesWindow(self._app, self._player, self._store, node)
 		issuesWindow.window.set_modal(True)
 		issuesWindow.window.set_transient_for(self._window)
-		issuesWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			issuesWindow.window.fullscreen()
+		else:
+			issuesWindow.window.unfullscreen()
 		issuesWindow.connect("quit", self._on_quit)
 		issuesWindow.connect("home", self._on_home)
 		issuesWindow.connect("jump-to", self._on_jump)
+		issuesWindow.connect("fullscreen", self._on_child_fullscreen)
 		issuesWindow.show()
 		return issuesWindow
 
@@ -188,10 +189,14 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 		issuesWindow = MagazineArticlesWindow(self._app, self._player, self._store, node)
 		issuesWindow.window.set_modal(True)
 		issuesWindow.window.set_transient_for(self._window)
-		issuesWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			issuesWindow.window.fullscreen()
+		else:
+			issuesWindow.window.unfullscreen()
 		issuesWindow.connect("quit", self._on_quit)
 		issuesWindow.connect("home", self._on_home)
 		issuesWindow.connect("jump-to", self._on_jump)
+		issuesWindow.connect("fullscreen", self._on_child_fullscreen)
 		issuesWindow.show()
 		return issuesWindow
 
@@ -247,10 +252,14 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 		issuesWindow = MagazineArticleWindow(self._app, self._player, self._store, node)
 		issuesWindow.window.set_modal(True)
 		issuesWindow.window.set_transient_for(self._window)
-		issuesWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			issuesWindow.window.fullscreen()
+		else:
+			issuesWindow.window.unfullscreen()
 		issuesWindow.connect("quit", self._on_quit)
 		issuesWindow.connect("home", self._on_home)
 		issuesWindow.connect("jump-to", self._on_jump)
+		issuesWindow.connect("fullscreen", self._on_child_fullscreen)
 		issuesWindow.show()
 		return issuesWindow
 

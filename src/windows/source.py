@@ -114,8 +114,13 @@ class SourceSelector(windows._base.BasicWindow):
 		sourceWindow.window.set_modal(True)
 		sourceWindow.window.set_transient_for(self._window)
 		sourceWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			sourceWindow.window.fullscreen()
+		else:
+			sourceWindow.window.unfullscreen()
 		sourceWindow.connect("quit", self._on_quit)
 		sourceWindow.connect("jump-to", self._on_jump)
+		sourceWindow.connect("fullscreen", self._on_child_fullscreen)
 		sourceWindow.show()
 		return sourceWindow
 

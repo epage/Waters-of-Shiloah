@@ -6,8 +6,6 @@ import gtk
 import hildonize
 import util.go_utils as go_utils
 import util.misc as misc_utils
-import banners
-import stream_index
 
 import windows
 
@@ -73,10 +71,14 @@ class ConferencesWindow(windows._base.ListWindow):
 		sessionsWindow = ConferenceSessionsWindow(self._app, self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
-		sessionsWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			sessionsWindow.window.fullscreen()
+		else:
+			sessionsWindow.window.unfullscreen()
 		sessionsWindow.connect("quit", self._on_quit)
 		sessionsWindow.connect("home", self._on_home)
 		sessionsWindow.connect("jump-to", self._on_jump)
+		sessionsWindow.connect("fullscreen", self._on_child_fullscreen)
 		sessionsWindow.show()
 		return sessionsWindow
 
@@ -133,10 +135,14 @@ class ConferenceSessionsWindow(windows._base.ListWindow):
 		sessionsWindow = ConferenceTalksWindow(self._app, self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
-		sessionsWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			sessionsWindow.window.fullscreen()
+		else:
+			sessionsWindow.window.unfullscreen()
 		sessionsWindow.connect("quit", self._on_quit)
 		sessionsWindow.connect("home", self._on_home)
 		sessionsWindow.connect("jump-to", self._on_jump)
+		sessionsWindow.connect("fullscreen", self._on_child_fullscreen)
 		sessionsWindow.show()
 		return sessionsWindow
 
@@ -192,10 +198,14 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 		sessionsWindow = ConferenceTalkWindow(self._app, self._player, self._store, node)
 		sessionsWindow.window.set_modal(True)
 		sessionsWindow.window.set_transient_for(self._window)
-		sessionsWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			sessionsWindow.window.fullscreen()
+		else:
+			sessionsWindow.window.unfullscreen()
 		sessionsWindow.connect("quit", self._on_quit)
 		sessionsWindow.connect("home", self._on_home)
 		sessionsWindow.connect("jump-to", self._on_jump)
+		sessionsWindow.connect("fullscreen", self._on_child_fullscreen)
 		sessionsWindow.show()
 		return sessionsWindow
 
