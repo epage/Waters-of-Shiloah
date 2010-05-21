@@ -269,6 +269,7 @@ class ListWindow(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_title_change(self, player, node):
+		assert not self._isDestroyed
 		self._select_row()
 
 	@misc_utils.log_exception(_moduleLogger)
@@ -419,6 +420,7 @@ class PresenterWindow(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_state_change(self, player, newState):
+		assert not self._isDestroyed
 		if self._active and self._player.state == self._player.STATE_PLAY:
 			self._seekbar.show()
 			assert self._updateSeek is None
@@ -435,6 +437,7 @@ class PresenterWindow(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_title_change(self, player, node):
+		assert not self._isDestroyed
 		if not self._active or node in [None, self._node]:
 			self._playerNode = node
 			return
@@ -444,6 +447,7 @@ class PresenterWindow(BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_error(self, player, err, debug):
+		assert not self._isDestroyed
 		_moduleLogger.error("%r - %r" % (err, debug))
 
 	@misc_utils.log_exception(_moduleLogger)
