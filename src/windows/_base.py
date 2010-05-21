@@ -13,7 +13,6 @@ import util.go_utils as go_utils
 
 import stream_index
 import banners
-import playcontrol
 import presenter
 
 
@@ -210,14 +209,14 @@ class ListWindow(BasicWindow):
 		self._treeScroller = hildonize.hildonize_scrollwindow(self._treeScroller)
 
 		self._separator = gtk.HSeparator()
-		self._playcontrol = playcontrol.NavControl(self._player, self._store)
-		self._playcontrol.connect("home", self._on_home)
-		self._playcontrol.connect("jump-to", self._on_jump)
+		self._presenter = presenter.NavControl(self._player, self._store)
+		self._presenter.connect("home", self._on_home)
+		self._presenter.connect("jump-to", self._on_jump)
 
 		self._contentLayout = gtk.VBox(False)
 		self._contentLayout.pack_start(self._treeScroller, True, True)
 		self._contentLayout.pack_start(self._separator, False, True)
-		self._contentLayout.pack_start(self._playcontrol.toplevel, False, True)
+		self._contentLayout.pack_start(self._presenter.toplevel, False, True)
 
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._contentLayout, True, True)
@@ -229,7 +228,7 @@ class ListWindow(BasicWindow):
 		self._loadingBanner.toplevel.hide()
 
 		self._refresh()
-		self._playcontrol.refresh()
+		self._presenter.refresh()
 
 	@classmethod
 	def _get_columns(cls):

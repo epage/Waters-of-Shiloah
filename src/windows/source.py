@@ -6,7 +6,7 @@ import gtk
 import constants
 import util.misc as misc_utils
 import banners
-import playcontrol
+import presenter
 import stream_index
 
 import windows
@@ -44,13 +44,13 @@ class SourceSelector(windows._base.BasicWindow):
 		self._buttonLayout.pack_start(self._scriptureButton, True, True)
 
 		self._separator = gtk.HSeparator()
-		self._playcontrol = playcontrol.NavControl(player, store)
-		self._playcontrol.connect("jump-to", self._on_jump)
+		self._presenter = presenter.NavControl(player, store)
+		self._presenter.connect("jump-to", self._on_jump)
 
 		self._layout.pack_start(self._loadingBanner.toplevel, False, False)
 		self._layout.pack_start(self._buttonLayout, True, True)
 		self._layout.pack_start(self._separator, False, True)
-		self._layout.pack_start(self._playcontrol.toplevel, False, True)
+		self._layout.pack_start(self._presenter.toplevel, False, True)
 
 		self._window.set_title(constants.__pretty_app_name__)
 
@@ -58,7 +58,7 @@ class SourceSelector(windows._base.BasicWindow):
 		windows._base.BasicWindow.show(self)
 
 		self._errorBanner.toplevel.hide()
-		self._playcontrol.toplevel.hide()
+		self._presenter.toplevel.hide()
 
 		self._refresh()
 
