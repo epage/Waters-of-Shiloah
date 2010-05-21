@@ -2,7 +2,6 @@ import logging
 
 import gobject
 import pango
-import cairo
 import gtk
 
 import util.misc as misc_utils
