@@ -278,6 +278,8 @@ class NavControl(gobject.GObject, go_utils.AutoSignal):
 
 	def __init__(self, player, store):
 		gobject.GObject.__init__(self)
+		self._layout = gtk.HBox()
+		go_utils.AutoSignal.__init__(self, self.toplevel)
 
 		self._store = store
 
@@ -285,18 +287,16 @@ class NavControl(gobject.GObject, go_utils.AutoSignal):
 
 		self._controlBox = NavigationBox()
 		self._controlBox.toplevel.add(self._controlButton)
-		self._controlBox.connect("action", self._on_nav_action)
-		self._controlBox.connect("navigating", self._on_navigating)
+		self.connect_auto(self._controlBox, "action", self._on_nav_action)
+		self.connect_auto(self._controlBox, "navigating", self._on_navigating)
 
 		self._titleButton = gtk.Label()
 
 		self._displayBox = NavigationBox()
 		self._displayBox.toplevel.add(self._titleButton)
-		self._displayBox.connect("action", self._on_nav_action)
-		self._displayBox.connect("navigating", self._on_navigating)
+		self.connect_auto(self._displayBox, "action", self._on_nav_action)
+		self.connect_auto(self._displayBox, "navigating", self._on_navigating)
 
-		self._layout = gtk.HBox()
-		go_utils.AutoSignal.__init__(self, self.toplevel)
 		self._layout.pack_start(self._controlBox.toplevel, False, False)
 		self._layout.pack_start(self._displayBox.toplevel, True, True)
 		self._player = player

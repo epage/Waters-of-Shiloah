@@ -210,8 +210,8 @@ class ListWindow(BasicWindow):
 
 		self._separator = gtk.HSeparator()
 		self._presenter = presenter.NavControl(self._player, self._store)
-		self._presenter.connect("home", self._on_home)
-		self._presenter.connect("jump-to", self._on_jump)
+		self.connect_auto(self._presenter, "home", self._on_home)
+		self.connect_auto(self._presenter, "jump-to", self._on_jump)
 
 		self._contentLayout = gtk.VBox(False)
 		self._contentLayout.pack_start(self._treeScroller, True, True)
@@ -356,8 +356,8 @@ class PresenterWindow(BasicWindow):
 		)
 		self._presenterNavigation = presenter.NavigationBox()
 		self._presenterNavigation.toplevel.add(self._presenter.toplevel)
-		self._presenterNavigation.connect("action", self._on_nav_action)
-		self._presenterNavigation.connect("navigating", self._on_navigating)
+		self.connect_auto(self._presenterNavigation, "action", self._on_nav_action)
+		self.connect_auto(self._presenterNavigation, "navigating", self._on_navigating)
 
 		self._seekbar = hildonize.create_seekbar()
 		self._seekbar.connect("change-value", self._on_user_seek)

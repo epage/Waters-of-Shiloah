@@ -66,10 +66,10 @@ class ScripturesWindow(windows._base.ListWindow):
 			booksWindow.window.fullscreen()
 		else:
 			booksWindow.window.unfullscreen()
-		booksWindow.connect("quit", self._on_quit)
-		booksWindow.connect("home", self._on_home)
-		booksWindow.connect("jump-to", self._on_jump)
-		booksWindow.connect("fullscreen", self._on_child_fullscreen)
+		booksWindow.connect_auto(booksWindow, "quit", self._on_quit)
+		booksWindow.connect_auto(booksWindow, "home", self._on_home)
+		booksWindow.connect_auto(booksWindow, "jump-to", self._on_jump)
+		booksWindow.connect_auto(booksWindow, "fullscreen", self._on_child_fullscreen)
 		booksWindow.show()
 		return booksWindow
 
@@ -130,10 +130,10 @@ class ScriptureBooksWindow(windows._base.ListWindow):
 			booksWindow.window.fullscreen()
 		else:
 			booksWindow.window.unfullscreen()
-		booksWindow.connect("quit", self._on_quit)
-		booksWindow.connect("home", self._on_home)
-		booksWindow.connect("jump-to", self._on_jump)
-		booksWindow.connect("fullscreen", self._on_child_fullscreen)
+		booksWindow.connect_auto(booksWindow, "quit", self._on_quit)
+		booksWindow.connect_auto(booksWindow, "home", self._on_home)
+		booksWindow.connect_auto(booksWindow, "jump-to", self._on_jump)
+		booksWindow.connect_auto(booksWindow, "fullscreen", self._on_child_fullscreen)
 		booksWindow.show()
 		return booksWindow
 
@@ -194,10 +194,10 @@ class ScriptureChaptersWindow(windows._base.ListWindow):
 			booksWindow.window.fullscreen()
 		else:
 			booksWindow.window.unfullscreen()
-		booksWindow.connect("quit", self._on_quit)
-		booksWindow.connect("home", self._on_home)
-		booksWindow.connect("jump-to", self._on_jump)
-		booksWindow.connect("fullscreen", self._on_child_fullscreen)
+		booksWindow.connect_auto(booksWindow, "quit", self._on_quit)
+		booksWindow.connect_auto(booksWindow, "home", self._on_home)
+		booksWindow.connect_auto(booksWindow, "jump-to", self._on_jump)
+		booksWindow.connect_auto(booksWindow, "fullscreen", self._on_child_fullscreen)
 		booksWindow.show()
 		return booksWindow
 

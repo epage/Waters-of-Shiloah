@@ -99,10 +99,10 @@ class MagazinesWindow(windows._base.ListWindow):
 			issuesWindow.window.fullscreen()
 		else:
 			issuesWindow.window.unfullscreen()
-		issuesWindow.connect("quit", self._on_quit)
-		issuesWindow.connect("home", self._on_home)
-		issuesWindow.connect("jump-to", self._on_jump)
-		issuesWindow.connect("fullscreen", self._on_child_fullscreen)
+		issuesWindow.connect_auto(issuesWindow, "quit", self._on_quit)
+		issuesWindow.connect_auto(issuesWindow, "home", self._on_home)
+		issuesWindow.connect_auto(issuesWindow, "jump-to", self._on_jump)
+		issuesWindow.connect_auto(issuesWindow, "fullscreen", self._on_child_fullscreen)
 		issuesWindow.show()
 		return issuesWindow
 
@@ -193,10 +193,10 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 			issuesWindow.window.fullscreen()
 		else:
 			issuesWindow.window.unfullscreen()
-		issuesWindow.connect("quit", self._on_quit)
-		issuesWindow.connect("home", self._on_home)
-		issuesWindow.connect("jump-to", self._on_jump)
-		issuesWindow.connect("fullscreen", self._on_child_fullscreen)
+		issuesWindow.connect_auto(issuesWindow, "quit", self._on_quit)
+		issuesWindow.connect_auto(issuesWindow, "home", self._on_home)
+		issuesWindow.connect_auto(issuesWindow, "jump-to", self._on_jump)
+		issuesWindow.connect_auto(issuesWindow, "fullscreen", self._on_child_fullscreen)
 		issuesWindow.show()
 		return issuesWindow
 
@@ -256,10 +256,10 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 			issuesWindow.window.fullscreen()
 		else:
 			issuesWindow.window.unfullscreen()
-		issuesWindow.connect("quit", self._on_quit)
-		issuesWindow.connect("home", self._on_home)
-		issuesWindow.connect("jump-to", self._on_jump)
-		issuesWindow.connect("fullscreen", self._on_child_fullscreen)
+		issuesWindow.connect_auto(issuesWindow, "quit", self._on_quit)
+		issuesWindow.connect_auto(issuesWindow, "home", self._on_home)
+		issuesWindow.connect_auto(issuesWindow, "jump-to", self._on_jump)
+		issuesWindow.connect_auto(issuesWindow, "fullscreen", self._on_child_fullscreen)
 		issuesWindow.show()
 		return issuesWindow
 

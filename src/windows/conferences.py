@@ -75,10 +75,10 @@ class ConferencesWindow(windows._base.ListWindow):
 			sessionsWindow.window.fullscreen()
 		else:
 			sessionsWindow.window.unfullscreen()
-		sessionsWindow.connect("quit", self._on_quit)
-		sessionsWindow.connect("home", self._on_home)
-		sessionsWindow.connect("jump-to", self._on_jump)
-		sessionsWindow.connect("fullscreen", self._on_child_fullscreen)
+		sessionsWindow.connect_auto(sessionsWindow, "quit", self._on_quit)
+		sessionsWindow.connect_auto(sessionsWindow, "home", self._on_home)
+		sessionsWindow.connect_auto(sessionsWindow, "jump-to", self._on_jump)
+		sessionsWindow.connect_auto(sessionsWindow, "fullscreen", self._on_child_fullscreen)
 		sessionsWindow.show()
 		return sessionsWindow
 
@@ -139,10 +139,10 @@ class ConferenceSessionsWindow(windows._base.ListWindow):
 			sessionsWindow.window.fullscreen()
 		else:
 			sessionsWindow.window.unfullscreen()
-		sessionsWindow.connect("quit", self._on_quit)
-		sessionsWindow.connect("home", self._on_home)
-		sessionsWindow.connect("jump-to", self._on_jump)
-		sessionsWindow.connect("fullscreen", self._on_child_fullscreen)
+		sessionsWindow.connect_auto(sessionsWindow, "quit", self._on_quit)
+		sessionsWindow.connect_auto(sessionsWindow, "home", self._on_home)
+		sessionsWindow.connect_auto(sessionsWindow, "jump-to", self._on_jump)
+		sessionsWindow.connect_auto(sessionsWindow, "fullscreen", self._on_child_fullscreen)
 		sessionsWindow.show()
 		return sessionsWindow
 
@@ -202,10 +202,10 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 			sessionsWindow.window.fullscreen()
 		else:
 			sessionsWindow.window.unfullscreen()
-		sessionsWindow.connect("quit", self._on_quit)
-		sessionsWindow.connect("home", self._on_home)
-		sessionsWindow.connect("jump-to", self._on_jump)
-		sessionsWindow.connect("fullscreen", self._on_child_fullscreen)
+		sessionsWindow.connect_auto(sessionsWindow, "quit", self._on_quit)
+		sessionsWindow.connect_auto(sessionsWindow, "home", self._on_home)
+		sessionsWindow.connect_auto(sessionsWindow, "jump-to", self._on_jump)
+		sessionsWindow.connect_auto(sessionsWindow, "fullscreen", self._on_child_fullscreen)
 		sessionsWindow.show()
 		return sessionsWindow
 

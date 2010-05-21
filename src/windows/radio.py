@@ -33,8 +33,8 @@ class RadioWindow(windows._base.BasicWindow):
 		self._header = self._store.get_image_from_store(headerPath)
 		self._headerNavigation = presenter.NavigationBox()
 		self._headerNavigation.toplevel.add(self._header)
-		self._headerNavigation.connect("action", self._on_nav_action)
-		self._headerNavigation.connect("navigating", self._on_navigating)
+		self.connect_auto(self._headerNavigation, "action", self._on_nav_action)
+		self.connect_auto(self._headerNavigation, "navigating", self._on_navigating)
 
 		self._programmingModel = gtk.ListStore(
 			gobject.TYPE_STRING,
@@ -74,8 +74,8 @@ class RadioWindow(windows._base.BasicWindow):
 		self._presenter = presenter.StreamMiniPresenter(self._store)
 		self._presenterNavigation = presenter.NavigationBox()
 		self._presenterNavigation.toplevel.add(self._presenter.toplevel)
-		self._presenterNavigation.connect("action", self._on_nav_action)
-		self._presenterNavigation.connect("navigating", self._on_navigating)
+		self.connect_auto(self._presenterNavigation, "action", self._on_nav_action)
+		self.connect_auto(self._presenterNavigation, "navigating", self._on_navigating)
 
 		self._radioLayout = gtk.VBox(False)
 		self._radioLayout.pack_start(self._headerNavigation.toplevel, False, False)
