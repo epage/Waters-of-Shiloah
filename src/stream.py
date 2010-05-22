@@ -115,7 +115,6 @@ class GSTStream(gobject.GObject):
 		return self._duration
 
 	def seek_time(self, ns):
-		_moduleLogger.debug("Seeking to: %s", ns)
 		self._elapsed = ns
 		self._player.seek_simple(self._timeFormat, self._seekFlag, ns)
 
