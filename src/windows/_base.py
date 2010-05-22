@@ -66,9 +66,9 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 		self._layout.pack_start(self._errorBanner.toplevel, False, True)
 
 		self._window = gtk.Window()
-		go_utils.AutoSignal.__init__(self, self.window)
 		self._window.add(self._layout)
 		self._window = hildonize.hildonize_window(self._app, self._window)
+		go_utils.AutoSignal.__init__(self, self.window)
 
 		self._window.set_icon(self._store.get_pixbuf_from_store(self._store.STORE_LOOKUP["icon"]))
 		self._window.connect("key-press-event", self._on_key_press)

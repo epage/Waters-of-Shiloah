@@ -3,7 +3,6 @@
 
 """
 @bug For some reason, the back/close button doesn't work when I nest multiple levels
-@bug When switching from conference to magazines, it randomly jumps around and duplicates windows
 
 @todo Re-use windows for better performance
 @todo Make radio program updates only happen when the app has focus to reduce CPU wakes
