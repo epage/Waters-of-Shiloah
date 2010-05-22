@@ -95,17 +95,25 @@ class Player(gobject.GObject):
 
 		self._calls.stop()
 
-	def back(self):
+	def back(self, forcePlay = False):
 		_moduleLogger.info("back")
 		assert self._nextSearch is None
 		self._nextSearch = stream_index.AsyncWalker(stream_index.get_previous)
-		self._nextSearch.start(self.node, self._on_next_node, self._on_node_search_error)
+		self._nextSearch.start(
+			self.node,
+			lambda node: self._on_next_node(node, forcePlay),
+			self._on_node_search_error
+		)
 
-	def next(self):
+	def next(self, forcePlay = False):
 		_moduleLogger.info("next")
 		assert self._nextSearch is None
 		self._nextSearch = stream_index.AsyncWalker(stream_index.get_next)
-		self._nextSearch.start(self.node, self._on_next_node, self._on_node_search_error)
+		self._nextSearch.start(
+			self.node,
+			lambda node: self._on_next_node(node, forcePlay),
+			self._on_node_search_error
+		)
 
 	def seek(self, percent):
 		target = percent * self._stream.duration
@@ -128,12 +136,12 @@ class Player(gobject.GObject):
 		self.emit("title_change", self._node)
 
 	@misc_utils.log_exception(_moduleLogger)
-	def _on_next_node(self, node):
+	def _on_next_node(self, node, forcePlay):
 		self._nextSearch = None
 
 		restart = self.state == self.STATE_PLAY
 		self._set_piece_by_node(node)
-		if restart:
+		if restart or forcePlay:
 			self.play()
 
 	@misc_utils.log_exception(_moduleLogger)
@@ -149,7 +157,7 @@ class Player(gobject.GObject):
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_stream_eof(self, s, uri):
 		_moduleLogger.info("EOF %s" % uri)
-		self.next()
+		self.next(forcePlay = True)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_stream_error(self, s, error, debug):
