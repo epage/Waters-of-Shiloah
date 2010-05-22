@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """
-@bug For some reason, the back/close button doesn't work when I nest multiple levels
-
 @todo Re-use windows for better performance
 @todo Make radio program updates only happen when the app has focus to reduce CPU wakes
 @todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)

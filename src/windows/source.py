@@ -5,6 +5,7 @@ import gtk
 
 import constants
 import util.misc as misc_utils
+import hildonize
 import banners
 import presenter
 import stream_index
@@ -111,8 +112,9 @@ class SourceSelector(windows._base.BasicWindow):
 		elif node.id == stream_index.SOURCE_SCRIPTURES:
 			Source = windows.scriptures.ScripturesWindow
 		sourceWindow = Source(self._app, self._player, self._store, node)
-		sourceWindow.window.set_modal(True)
-		sourceWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			sourceWindow.window.set_modal(True)
+			sourceWindow.window.set_transient_for(self._window)
 		sourceWindow.window.set_default_size(*self._window.get_size())
 		if self._windowInFullscreen:
 			sourceWindow.window.fullscreen()

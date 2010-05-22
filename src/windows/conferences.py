@@ -69,8 +69,9 @@ class ConferencesWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		sessionsWindow = ConferenceSessionsWindow(self._app, self._player, self._store, node)
-		sessionsWindow.window.set_modal(True)
-		sessionsWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			sessionsWindow.window.set_modal(True)
+			sessionsWindow.window.set_transient_for(self._window)
 		if self._windowInFullscreen:
 			sessionsWindow.window.fullscreen()
 		else:
@@ -133,8 +134,9 @@ class ConferenceSessionsWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		sessionsWindow = ConferenceTalksWindow(self._app, self._player, self._store, node)
-		sessionsWindow.window.set_modal(True)
-		sessionsWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			sessionsWindow.window.set_modal(True)
+			sessionsWindow.window.set_transient_for(self._window)
 		if self._windowInFullscreen:
 			sessionsWindow.window.fullscreen()
 		else:
@@ -196,8 +198,9 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		sessionsWindow = ConferenceTalkWindow(self._app, self._player, self._store, node)
-		sessionsWindow.window.set_modal(True)
-		sessionsWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			sessionsWindow.window.set_modal(True)
+			sessionsWindow.window.set_transient_for(self._window)
 		if self._windowInFullscreen:
 			sessionsWindow.window.fullscreen()
 		else:

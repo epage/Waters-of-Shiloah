@@ -93,8 +93,9 @@ class MagazinesWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		issuesWindow = MagazineIssuesWindow(self._app, self._player, self._store, node)
-		issuesWindow.window.set_modal(True)
-		issuesWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			issuesWindow.window.set_modal(True)
+			issuesWindow.window.set_transient_for(self._window)
 		if self._windowInFullscreen:
 			issuesWindow.window.fullscreen()
 		else:
@@ -187,8 +188,9 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		issuesWindow = MagazineArticlesWindow(self._app, self._player, self._store, node)
-		issuesWindow.window.set_modal(True)
-		issuesWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			issuesWindow.window.set_modal(True)
+			issuesWindow.window.set_transient_for(self._window)
 		if self._windowInFullscreen:
 			issuesWindow.window.fullscreen()
 		else:
@@ -250,8 +252,9 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		issuesWindow = MagazineArticleWindow(self._app, self._player, self._store, node)
-		issuesWindow.window.set_modal(True)
-		issuesWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			issuesWindow.window.set_modal(True)
+			issuesWindow.window.set_transient_for(self._window)
 		if self._windowInFullscreen:
 			issuesWindow.window.fullscreen()
 		else:

@@ -60,8 +60,9 @@ class ScripturesWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		booksWindow = ScriptureBooksWindow(self._app, self._player, self._store, node)
-		booksWindow.window.set_modal(True)
-		booksWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			booksWindow.window.set_modal(True)
+			booksWindow.window.set_transient_for(self._window)
 		if self._windowInFullscreen:
 			booksWindow.window.fullscreen()
 		else:
@@ -124,8 +125,9 @@ class ScriptureBooksWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		booksWindow = ScriptureChaptersWindow(self._app, self._player, self._store, node)
-		booksWindow.window.set_modal(True)
-		booksWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			booksWindow.window.set_modal(True)
+			booksWindow.window.set_transient_for(self._window)
 		if self._windowInFullscreen:
 			booksWindow.window.fullscreen()
 		else:
@@ -188,8 +190,9 @@ class ScriptureChaptersWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		booksWindow = ScriptureChapterWindow(self._app, self._player, self._store, node)
-		booksWindow.window.set_modal(True)
-		booksWindow.window.set_transient_for(self._window)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			booksWindow.window.set_modal(True)
+			booksWindow.window.set_transient_for(self._window)
 		if self._windowInFullscreen:
 			booksWindow.window.fullscreen()
 		else:
