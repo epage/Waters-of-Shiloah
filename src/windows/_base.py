@@ -366,7 +366,7 @@ class PresenterWindow(BasicWindow):
 		self._layout.pack_start(self._presenterNavigation.toplevel, True, True)
 		self._layout.pack_start(self._seekbar, False, False)
 
-		self._window.set_title(self._node.title)
+		self._window.set_title(self._node.get_parent().title)
 
 	def _get_background(self):
 		raise NotImplementedError()
