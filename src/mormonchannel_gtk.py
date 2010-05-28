@@ -133,27 +133,15 @@ class MormonChannelProgram(hildonize.get_app_class()):
 		except AttributeError:
 			pass # Either None or close was removed (in Fremantle)
 
-	@misc_utils.log_exception(_moduleLogger)
-	def _on_show_about(self, widget = None, data = None):
-		dialog = gtk.AboutDialog()
-		dialog.set_position(gtk.WIN_POS_CENTER)
-		dialog.set_name(constants.__pretty_app_name__)
-		dialog.set_version(constants.__version__)
-		dialog.set_copyright("")
-		dialog.set_website("")
-		comments = "Mormon Radio and Audiobook Player"
-		dialog.set_comments(comments)
-		dialog.set_authors(["Ed Page <eopage@byu.net>"])
-		dialog.run()
-		dialog.destroy()
-
 
 def run():
 	gobject.threads_init()
 	gtk.gdk.threads_init()
 	l = dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
-	hildonize.set_application_name("FMRadio") # Playback while silent on Maemo 5
+	# HACK Playback while silent on Maemo 5
+	hildonize.set_application_name("FMRadio")
+
 	app = MormonChannelProgram()
 	if not PROFILE_STARTUP:
 		try:

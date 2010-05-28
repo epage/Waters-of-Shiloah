@@ -63,7 +63,6 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 		self._errorBanner = banners.StackingBanner()
 
 		self._layout = gtk.VBox()
-		self._layout.pack_start(self._errorBanner.toplevel, False, True)
 
 		self._window = gtk.Window()
 		self._window.add(self._layout)
@@ -74,6 +73,31 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 		self._window.connect("key-press-event", self._on_key_press)
 		self._window.connect("window-state-event", self._on_window_state_change)
 		self._window.connect("destroy", self._on_destroy)
+
+		if hildonize.GTK_MENU_USED:
+			aboutMenuItem = gtk.MenuItem("About")
+			aboutMenuItem.connect("activate", self._on_about)
+
+			helpMenu = gtk.Menu()
+			helpMenu.append(aboutMenuItem)
+
+			helpMenuItem = gtk.MenuItem("Help")
+			helpMenuItem.set_submenu(helpMenu)
+
+			menuBar = gtk.MenuBar()
+			menuBar.append(helpMenuItem)
+
+			self._layout.pack_start(menuBar, False, False)
+		else:
+			aboutMenuItem = gtk.Button("About")
+			aboutMenuItem.connect("clicked", self._on_about)
+
+			appMenu = hildonize.hildon.AppMenu()
+			appMenu.append(aboutMenuItem)
+			appMenu.show_all()
+			self._window.set_app_menu(appMenu)
+
+		self._layout.pack_start(self._errorBanner.toplevel, False, True)
 
 	@property
 	def window(self):
@@ -97,6 +121,7 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 					e.section,
 				)
 			)
+			windowInFullscreen = self._windowInFullscreen
 
 		if windowInFullscreen:
 			self._window.fullscreen()
@@ -105,6 +130,10 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 
 	def jump_to(self, node):
 		raise NotImplementedError("On %s" % self)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_about(self, *args):
+		show_about()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_destroy(self, *args):
@@ -533,3 +562,18 @@ class PresenterWindow(BasicWindow):
 	def _on_node_search_error(self, e):
 		self._nextSearch = None
 		self._errorBanner.push_message(str(e))
+
+
+def show_about():
+	# @todo Turn this into a full-fledge window to keep it rotated
+	dialog = gtk.AboutDialog()
+	dialog.set_position(gtk.WIN_POS_CENTER)
+	dialog.set_name(constants.__pretty_app_name__)
+	dialog.set_version(constants.__version__)
+	dialog.set_copyright("(c) 2010 Intellectual Reserve, Inc. All rights reserved.")
+	dialog.set_website("http://www.lds.org")
+	comments = "Mormon Radio and Audiobook Player"
+	dialog.set_comments(comments)
+	dialog.set_authors(["The Church of Jesus Christ of Latter-day Saints"])
+	dialog.run()
+	dialog.destroy()

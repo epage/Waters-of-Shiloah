@@ -12,12 +12,16 @@ import constants
 
 
 __appname__ = constants.__app_name__
-__description__ = """
+__description__ = """Player for inspirational streaming radio and audiobooks including the KJV Bible
+Supports streaming:
+* "Mormon Channel" inspirational radio station
+* Conference precedings and magazines from The Church of Jesus Christ of Latter-day Saints
+* Scriptures, including King James Version of the Bible and the Book of Mormon
 .
-Homepage:
+Homepage: http://www.lds.org
 """
-__author__ = "Ed Page"
-__email__ = "eopage@byu.net"
+__author__ = "The Church of Jesus Christ of Latter-day Saints"
+__email__ = ""
 __version__ = constants.__version__
 __build__ = constants.__build__
 __changelog__ = """
@@ -70,12 +74,13 @@ def build_package(distribution):
 		"python-gtk2 | python2.5-gtk2",
 		"python-xml | python2.5-xml",
 		"python-dbus | python2.5-dbus",
+		"python-gst0.10 | python2.5-gst0.10",
 	])
 	maemoSpecificDepends = ", python-osso | python2.5-osso, python-hildon | python2.5-hildon"
 	p.depends += {
 		"debian": ", python-glade2",
-		"diablo": maemoSpecificDepends + ", python2.5-conic",
-		"fremantle": maemoSpecificDepends + ", python-glade2, python-alarm",
+		"diablo": maemoSpecificDepends + "",
+		"fremantle": maemoSpecificDepends + ", python-glade2",
 	}[distribution]
 	p.recommends = ", ".join([
 	])
