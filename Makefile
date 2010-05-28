@@ -2,8 +2,9 @@ PROJECT_NAME=MormonChannel
 SOURCE_PATH=src
 SOURCE=$(shell find $(SOURCE_PATH) -iname "*.py")
 PROGRAM=$(SOURCE_PATH)/mormonchannel_gtk.py
+DATA_PATH=data
 DATA_TYPES=*.ini *.map *.glade *.png
-DATA=$(foreach type, $(DATA_TYPES), $(shell find $(SOURCE_PATH) -iname "$(type)"))
+DATA=$(foreach type, $(DATA_TYPES), $(shell find $(DATA_PATH) -iname "$(type)")) data/COPYING
 OBJ=$(SOURCE:.py=.pyc)
 BUILD_PATH=./build
 TAG_FILE=~/.ctags/$(PROJECT_NAME).tags
@@ -44,12 +45,9 @@ package: $(OBJ)
 	cp $(SOURCE_PATH)/constants.py  $(BUILD_PATH)/generic
 	cp $(SOURCE_PATH)/$(PROJECT_NAME).py  $(BUILD_PATH)/generic
 	$(foreach file, $(DATA), cp $(file) $(BUILD_PATH)/generic/$(subst /,-,$(file)) ; )
-	$(foreach file, $(SOURCE), cp $(file) $(BUILD_PATH)/generic/$(subst /,-,$(file)) ; )
-	#$(foreach file, $(OBJ), cp $(file) $(BUILD_PATH)/generic/$(subst /,-,$(file)) ; )
+	$(foreach file, $(SOURCE) $(SOURCE_PATH)/LICENSE, cp $(file) $(BUILD_PATH)/generic/$(subst /,-,$(file)) ; )
 	cp support/$(PROJECT_NAME).desktop $(BUILD_PATH)/generic
-	cp support/icons/hicolor/26x26/hildon/$(PROJECT_NAME).png $(BUILD_PATH)/generic/26x26-$(PROJECT_NAME).png
-	cp support/icons/hicolor/64x64/hildon/$(PROJECT_NAME).png $(BUILD_PATH)/generic/64x64-$(PROJECT_NAME).png
-	cp support/icons/hicolor/scalable/hildon/$(PROJECT_NAME).png $(BUILD_PATH)/generic/scale-$(PROJECT_NAME).png
+	cp data/icon.png $(BUILD_PATH)/generic/48x48-$(PROJECT_NAME).png
 	cp support/builddeb.py $(BUILD_PATH)/generic
 	cp support/py2deb.py $(BUILD_PATH)/generic
 	cp support/fake_py2deb.py $(BUILD_PATH)/generic

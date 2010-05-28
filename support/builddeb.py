@@ -25,6 +25,7 @@ __email__ = ""
 __version__ = constants.__version__
 __build__ = constants.__build__
 __changelog__ = """
+Initial release
 """
 
 
@@ -34,13 +35,13 @@ gtk-update-icon-cache -f /usr/share/icons/hicolor
 """
 
 
-def find_files(path):
+def find_files(prefix, path):
 	for root, dirs, files in os.walk(path):
 		for file in files:
-			if file.startswith("src-"):
+			if file.startswith(prefix+"-"):
 				fileParts = file.split("-")
 				unused, relPathParts, newName = fileParts[0], fileParts[1:-1], fileParts[-1]
-				assert unused == "src"
+				assert unused == prefix
 				relPath = os.sep.join(relPathParts)
 				yield relPath, file, newName
 
@@ -85,9 +86,9 @@ def build_package(distribution):
 	p.recommends = ", ".join([
 	])
 	p.section = {
-		"debian": "",
-		"diablo": "",
-		"fremantle": "",
+		"debian": "sound",
+		"diablo": "user/multimedia",
+		"fremantle": "user/multimedia",
 	}[distribution]
 	p.arch = "all"
 	p.urgency = "low"
@@ -95,24 +96,26 @@ def build_package(distribution):
 	p.repository = "extras"
 	p.changelog = __changelog__
 	p.postinstall = __postinstall__
-	p.icon = {
-		"debian": "",
-		"diablo": "",
-		"fremantle": "", # Fremantle natively uses 48x48
-	}[distribution]
-	p["/usr/bin"] = [ "" ]
-	for relPath, files in unflatten_files(find_files(".")).iteritems():
-		fullPath = ""
+	p.icon = "48x48-MormonChannel.png"
+	p["/opt/MormonChannel/bin"] = ["MormonChannel.py"]
+	for relPath, files in unflatten_files(find_files("src", ".")).iteritems():
+		fullPath = "/opt/MormonChannel/lib"
 		if relPath:
 			fullPath += os.sep+relPath
 		p[fullPath] = list(
 			"|".join((oldName, newName))
 			for (oldName, newName) in files
 		)
-	p["/usr/share/applications/hildon"] = [""]
-	p["/usr/share/icons/hicolor/26x26/hildon"] = [""]
-	p["/usr/share/icons/hicolor/64x64/hildon"] = [""]
-	p["/usr/share/icons/hicolor/scalable/hildon"] = [""]
+	for relPath, files in unflatten_files(find_files("data", ".")).iteritems():
+		fullPath = "/opt/MormonChannel/share"
+		if relPath:
+			fullPath += os.sep+relPath
+		p[fullPath] = list(
+			"|".join((oldName, newName))
+			for (oldName, newName) in files
+		)
+	p["/usr/share/applications/hildon"] = ["MormonChannel.desktop"]
+	p["/usr/share/icons/hicolor/48x48/hildon"] = ["48x48-MormonChannel.png|MormonChannel.png"]
 
 	if distribution == "debian":
 		print p
