@@ -2,6 +2,7 @@ from __future__ import with_statement
 
 import ConfigParser
 import logging
+import webbrowser
 
 import gobject
 import gtk
@@ -133,7 +134,19 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_about(self, *args):
-		show_about()
+		sourceWindow = AboutWindow(self._app, self._player, self._store)
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			sourceWindow.window.set_modal(True)
+			sourceWindow.window.set_transient_for(self._window)
+		sourceWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			sourceWindow.window.fullscreen()
+		else:
+			sourceWindow.window.unfullscreen()
+		sourceWindow.connect("quit", self._on_quit)
+		sourceWindow.connect("jump-to", self._on_jump)
+		sourceWindow.connect("fullscreen", self._on_child_fullscreen)
+		sourceWindow.show()
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_destroy(self, *args):
@@ -564,16 +577,60 @@ class PresenterWindow(BasicWindow):
 		self._errorBanner.push_message(str(e))
 
 
-def show_about():
-	# @todo Turn this into a full-fledge window to keep it rotated
-	dialog = gtk.AboutDialog()
-	dialog.set_position(gtk.WIN_POS_CENTER)
-	dialog.set_name(constants.__pretty_app_name__)
-	dialog.set_version(constants.__version__)
-	dialog.set_copyright("(c) 2010 Intellectual Reserve, Inc. All rights reserved.")
-	dialog.set_website("http://www.lds.org")
-	comments = "Mormon Radio and Audiobook Player"
-	dialog.set_comments(comments)
-	dialog.set_authors(["The Church of Jesus Christ of Latter-day Saints"])
-	dialog.run()
-	dialog.destroy()
+class AboutWindow(BasicWindow):
+
+	def __init__(self, app, player, store):
+		BasicWindow.__init__(self, app, player, store)
+		self._window.set_title(constants.__pretty_app_name__)
+
+		self._titleLabel = gtk.Label()
+		self._titleLabel.set_markup("""
+<big>Mormon Channel</big>
+<i>Maemo Edition</i>
+Version %s
+""" % (constants.__version__, ))
+		self._titleLabel.set_property("justify", gtk.JUSTIFY_CENTER)
+
+		self._copyLabel = gtk.Label()
+		self._copyLabel.set_markup("""
+<small>(c) 2010 Intellectual Reserve, Inc.
+All rights reserved.</small>
+""")
+		self._copyLabel.set_property("justify", gtk.JUSTIFY_CENTER)
+
+		self._linkButton = gtk.LinkButton("LDS.org")
+		self._linkButton.set_uri("http://www.lds.org")
+		self._linkButton.connect("clicked", self._on_website)
+
+		self._spacedLayout = gtk.VBox(True)
+		self._spacedLayout.pack_start(self._titleLabel, False, False)
+		self._spacedLayout.pack_start(self._copyLabel, False, False)
+		self._spacedLayout.pack_start(self._linkButton, False, False)
+
+		self._separator = gtk.HSeparator()
+		self._presenter = presenter.NavControl(self._player, self._store)
+		self.connect_auto(self._presenter, "home", self._on_home)
+		self.connect_auto(self._presenter, "jump-to", self._on_jump)
+
+		self._layout.pack_start(self._spacedLayout, True, True)
+		self._layout.pack_start(self._presenter.toplevel, False, True)
+
+	def show(self):
+		BasicWindow.show(self)
+		self._window.show_all()
+		self._errorBanner.toplevel.hide()
+		self._presenter.refresh()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_about(self, *args):
+		pass
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_website(self, widget):
+		uri = widget.get_uri()
+		webbrowser.open(uri)
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_jump(self, source, node):
+		self.emit("jump-to", node)
+		self._window.destroy()
