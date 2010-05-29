@@ -118,20 +118,36 @@ class MormonChannelProgram(hildonize.get_app_class()):
 			gtk.main_quit()
 
 	def quit(self):
-		self._save_settings()
+		try:
+			self._save_settings()
+		except Exception:
+			_moduleLogger.exception("Error saving settigns")
 
-		self._player.stop()
-		self._index.stop()
-		self._store.stop()
+		try:
+			self._player.stop()
+		except Exception:
+			_moduleLogger.exception("Error stopping player")
+		try:
+			self._index.stop()
+		except Exception:
+			_moduleLogger.exception("Error stopping index")
+		try:
+			self._store.stop()
+		except Exception:
+			_moduleLogger.exception("Error stopping store")
 
 		try:
 			self._deviceState.close()
 		except AttributeError:
 			pass # Either None or close was removed (in Fremantle)
+		except Exception:
+			_moduleLogger.exception("Error closing device state")
 		try:
 			self._osso_c.close()
 		except AttributeError:
 			pass # Either None or close was removed (in Fremantle)
+		except Exception:
+			_moduleLogger.exception("Error closing osso state")
 
 
 def run():
