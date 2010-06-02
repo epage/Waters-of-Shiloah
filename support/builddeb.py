@@ -21,7 +21,7 @@ Supports streaming:
 Homepage: http://www.lds.org
 """
 __author__ = "The Church of Jesus Christ of Latter-day Saints"
-__email__ = ""
+__email__ = "lds-tech@ldschurch.org"
 __version__ = constants.__version__
 __build__ = constants.__build__
 __changelog__ = """
