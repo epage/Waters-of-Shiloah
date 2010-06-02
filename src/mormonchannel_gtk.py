@@ -2,21 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-@todo Add python-support support, http://svn.debian.org/viewsvn/collab-maint/deb-maint/python-support/trunk/README
-@todo Use XDG
-@todo Need to confirm id's are persistent (not just for todos but broken behavior on transition)
-	@todo Track recent
-	@todo Persisted Pause
-	@todo Favorites
-@todo Sleep timer
-@todo Podcast integration
-	@todo Default with BYU Devotionals, http://speeches.byu.edu/?act=help&page=podcast
-	@todo Mormon Messages
 @todo Reverse order option.  Toggle between playing ascending/descending chronological order
-@todo Jump to website
-@todo Offline mode
-@todo Re-use windows for better performance
-@todo Make radio program updates only happen when the app has focus to reduce CPU wakes
 """
 
 from __future__ import with_statement
