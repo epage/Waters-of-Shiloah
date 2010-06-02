@@ -636,7 +636,7 @@ class AboutWindow(BasicWindow):
 
 		self._titleLabel = gtk.Label()
 		self._titleLabel.set_markup("""
-<big>Mormon Channel</big>
+<big><b>Mormon Channel</b></big>
 <i>Maemo Edition</i>
 Version %s
 """ % (constants.__version__, ))
