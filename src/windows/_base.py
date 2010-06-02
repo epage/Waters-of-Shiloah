@@ -649,8 +649,8 @@ All rights reserved.</small>
 """)
 		self._copyLabel.set_property("justify", gtk.JUSTIFY_CENTER)
 
-		self._linkButton = gtk.LinkButton("LDS.org")
-		self._linkButton.set_uri("http://www.lds.org")
+		self._linkButton = gtk.LinkButton("http://www.lds.org")
+		self._linkButton.set_label("LDS.org")
 		self._linkButton.connect("clicked", self._on_website)
 
 		self._spacedLayout = gtk.VBox(True)
