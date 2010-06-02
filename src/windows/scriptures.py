@@ -59,20 +59,10 @@ class ScripturesWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		booksWindow = ScriptureBooksWindow(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			booksWindow.window.set_modal(True)
-			booksWindow.window.set_transient_for(self._window)
-		if self._windowInFullscreen:
-			booksWindow.window.fullscreen()
-		else:
-			booksWindow.window.unfullscreen()
-		booksWindow.connect_auto(booksWindow, "quit", self._on_quit)
-		booksWindow.connect_auto(booksWindow, "home", self._on_home)
-		booksWindow.connect_auto(booksWindow, "jump-to", self._on_jump)
-		booksWindow.connect_auto(booksWindow, "fullscreen", self._on_child_fullscreen)
-		booksWindow.show()
-		return booksWindow
+		childWindow = ScriptureBooksWindow(self._app, self._player, self._store, node)
+		self._configure_child(childWindow)
+		childWindow.show()
+		return childWindow
 
 
 gobject.type_register(ScripturesWindow)
@@ -124,20 +114,10 @@ class ScriptureBooksWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		booksWindow = ScriptureChaptersWindow(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			booksWindow.window.set_modal(True)
-			booksWindow.window.set_transient_for(self._window)
-		if self._windowInFullscreen:
-			booksWindow.window.fullscreen()
-		else:
-			booksWindow.window.unfullscreen()
-		booksWindow.connect_auto(booksWindow, "quit", self._on_quit)
-		booksWindow.connect_auto(booksWindow, "home", self._on_home)
-		booksWindow.connect_auto(booksWindow, "jump-to", self._on_jump)
-		booksWindow.connect_auto(booksWindow, "fullscreen", self._on_child_fullscreen)
-		booksWindow.show()
-		return booksWindow
+		childWindow = ScriptureChaptersWindow(self._app, self._player, self._store, node)
+		self._configure_child(childWindow)
+		childWindow.show()
+		return childWindow
 
 
 gobject.type_register(ScriptureBooksWindow)
@@ -189,20 +169,10 @@ class ScriptureChaptersWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		booksWindow = ScriptureChapterWindow(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			booksWindow.window.set_modal(True)
-			booksWindow.window.set_transient_for(self._window)
-		if self._windowInFullscreen:
-			booksWindow.window.fullscreen()
-		else:
-			booksWindow.window.unfullscreen()
-		booksWindow.connect_auto(booksWindow, "quit", self._on_quit)
-		booksWindow.connect_auto(booksWindow, "home", self._on_home)
-		booksWindow.connect_auto(booksWindow, "jump-to", self._on_jump)
-		booksWindow.connect_auto(booksWindow, "fullscreen", self._on_child_fullscreen)
-		booksWindow.show()
-		return booksWindow
+		childWindow = ScriptureChapterWindow(self._app, self._player, self._store, node)
+		self._configure_child(childWindow)
+		childWindow.show()
+		return childWindow
 
 
 gobject.type_register(ScriptureChaptersWindow)
@@ -213,8 +183,13 @@ class ScriptureChapterWindow(windows._base.PresenterWindow):
 	def __init__(self, app, player, store, node):
 		windows._base.PresenterWindow.__init__(self, app, player, store, node)
 
-	def _get_background(self):
-		return self._store.STORE_LOOKUP["scripture_background"]
+	def _get_background(self, orientation):
+		if orientation == gtk.ORIENTATION_VERTICAL:
+			return self._store.STORE_LOOKUP["scripture_background"]
+		elif orientation == gtk.ORIENTATION_HORIZONTAL:
+			return self._store.STORE_LOOKUP["scripture_background_landscape"]
+		else:
+			raise NotImplementedError("Unknown orientation %s" % orientation)
 
 
 gobject.type_register(ScriptureChapterWindow)

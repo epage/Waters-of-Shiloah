@@ -68,20 +68,10 @@ class ConferencesWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		sessionsWindow = ConferenceSessionsWindow(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			sessionsWindow.window.set_modal(True)
-			sessionsWindow.window.set_transient_for(self._window)
-		if self._windowInFullscreen:
-			sessionsWindow.window.fullscreen()
-		else:
-			sessionsWindow.window.unfullscreen()
-		sessionsWindow.connect_auto(sessionsWindow, "quit", self._on_quit)
-		sessionsWindow.connect_auto(sessionsWindow, "home", self._on_home)
-		sessionsWindow.connect_auto(sessionsWindow, "jump-to", self._on_jump)
-		sessionsWindow.connect_auto(sessionsWindow, "fullscreen", self._on_child_fullscreen)
-		sessionsWindow.show()
-		return sessionsWindow
+		childWindow = ConferenceSessionsWindow(self._app, self._player, self._store, node)
+		self._configure_child(childWindow)
+		childWindow.show()
+		return childWindow
 
 
 gobject.type_register(ConferencesWindow)
@@ -133,20 +123,10 @@ class ConferenceSessionsWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		sessionsWindow = ConferenceTalksWindow(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			sessionsWindow.window.set_modal(True)
-			sessionsWindow.window.set_transient_for(self._window)
-		if self._windowInFullscreen:
-			sessionsWindow.window.fullscreen()
-		else:
-			sessionsWindow.window.unfullscreen()
-		sessionsWindow.connect_auto(sessionsWindow, "quit", self._on_quit)
-		sessionsWindow.connect_auto(sessionsWindow, "home", self._on_home)
-		sessionsWindow.connect_auto(sessionsWindow, "jump-to", self._on_jump)
-		sessionsWindow.connect_auto(sessionsWindow, "fullscreen", self._on_child_fullscreen)
-		sessionsWindow.show()
-		return sessionsWindow
+		childWindow = ConferenceTalksWindow(self._app, self._player, self._store, node)
+		self._configure_child(childWindow)
+		childWindow.show()
+		return childWindow
 
 
 gobject.type_register(ConferenceSessionsWindow)
@@ -197,20 +177,10 @@ class ConferenceTalksWindow(windows._base.ListWindow):
 		self._errorBanner.push_message(str(exception))
 
 	def _window_from_node(self, node):
-		sessionsWindow = ConferenceTalkWindow(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			sessionsWindow.window.set_modal(True)
-			sessionsWindow.window.set_transient_for(self._window)
-		if self._windowInFullscreen:
-			sessionsWindow.window.fullscreen()
-		else:
-			sessionsWindow.window.unfullscreen()
-		sessionsWindow.connect_auto(sessionsWindow, "quit", self._on_quit)
-		sessionsWindow.connect_auto(sessionsWindow, "home", self._on_home)
-		sessionsWindow.connect_auto(sessionsWindow, "jump-to", self._on_jump)
-		sessionsWindow.connect_auto(sessionsWindow, "fullscreen", self._on_child_fullscreen)
-		sessionsWindow.show()
-		return sessionsWindow
+		childWindow = ConferenceTalkWindow(self._app, self._player, self._store, node)
+		self._configure_child(childWindow)
+		childWindow.show()
+		return childWindow
 
 
 gobject.type_register(ConferenceTalksWindow)
@@ -221,8 +191,13 @@ class ConferenceTalkWindow(windows._base.PresenterWindow):
 	def __init__(self, app, player, store, node):
 		windows._base.PresenterWindow.__init__(self, app, player, store, node)
 
-	def _get_background(self):
-		return self._store.STORE_LOOKUP["conference_background"]
+	def _get_background(self, orientation):
+		if orientation == gtk.ORIENTATION_VERTICAL:
+			return self._store.STORE_LOOKUP["conference_background"]
+		elif orientation == gtk.ORIENTATION_HORIZONTAL:
+			return self._store.STORE_LOOKUP["conference_background_landscape"]
+		else:
+			raise NotImplementedError("Unknown orientation %s" % orientation)
 
 
 gobject.type_register(ConferenceTalkWindow)

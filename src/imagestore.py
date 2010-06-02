@@ -40,9 +40,12 @@ class ImageStore(object):
 		"loading": "loading.gif",
 
 		"radio_header": "radio_header.png",
-		"conference_background": "conference_bg.png",
-		"magazine_background": "magazine_bg.png",
-		"scripture_background": "scripture_bg.png",
+		"conference_background": "background_conference_p.png",
+		"conference_background_landscape": "background_conference_l.png",
+		"magazine_background": "background_magazines_p.png",
+		"magazine_background_landscape": "background_magazines_l.png",
+		"scripture_background": "background_scriptures_p.png",
+		"scripture_background_landscape": "background_scriptures_l.png",
 
 		"conferences": "conference.png",
 		"magazines": "magazines.png",

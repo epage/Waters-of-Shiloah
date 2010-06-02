@@ -48,11 +48,17 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 			gobject.TYPE_NONE,
 			(gobject.TYPE_BOOLEAN, ),
 		),
+		'rotate' : (
+			gobject.SIGNAL_RUN_LAST,
+			gobject.TYPE_NONE,
+			(gobject.TYPE_PYOBJECT, ),
+		),
 	}
 
 	def __init__(self, app, player, store):
 		gobject.GObject.__init__(self)
 		self._isDestroyed = False
+		self._isPortrait = True
 
 		self._app = app
 		self._player = player
@@ -132,20 +138,43 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 	def jump_to(self, node):
 		raise NotImplementedError("On %s" % self)
 
+	def set_orientation(self, orientation):
+		oldIsPortrait = self._isPortrait
+		if orientation == gtk.ORIENTATION_VERTICAL:
+			hildonize.window_to_portrait(self._window)
+			self._isPortrait = True
+		elif orientation == gtk.ORIENTATION_HORIZONTAL:
+			hildonize.window_to_landscape(self._window)
+			self._isPortrait = False
+		else:
+			raise NotImplementedError(orientation)
+		didChange = oldIsPortrait != self._isPortrait
+		if didChange:
+			self.emit("rotate", orientation)
+		return didChange
+
+	def _configure_child(self, childWindow):
+		if not hildonize.IS_FREMANTLE_SUPPORTED:
+			childWindow.window.set_modal(True)
+			childWindow.window.set_transient_for(self._window)
+		childWindow.window.set_default_size(*self._window.get_size())
+		if self._windowInFullscreen:
+			childWindow.window.fullscreen()
+		else:
+			childWindow.window.unfullscreen()
+		childWindow.set_orientation(
+			gtk.ORIENTATION_VERTICAL if self._isPortrait else gtk.ORIENTATION_HORIZONTAL
+		)
+		childWindow.connect_auto(childWindow, "quit", self._on_quit)
+		childWindow.connect_auto(childWindow, "home", self._on_home)
+		childWindow.connect_auto(childWindow, "jump-to", self._on_jump)
+		childWindow.connect_auto(childWindow, "fullscreen", self._on_child_fullscreen)
+		childWindow.connect_auto(childWindow, "rotate", self._on_child_rotate)
+
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_about(self, *args):
 		sourceWindow = AboutWindow(self._app, self._player, self._store)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			sourceWindow.window.set_modal(True)
-			sourceWindow.window.set_transient_for(self._window)
-		sourceWindow.window.set_default_size(*self._window.get_size())
-		if self._windowInFullscreen:
-			sourceWindow.window.fullscreen()
-		else:
-			sourceWindow.window.unfullscreen()
-		sourceWindow.connect("quit", self._on_quit)
-		sourceWindow.connect("jump-to", self._on_jump)
-		sourceWindow.connect("fullscreen", self._on_child_fullscreen)
+		self._configure_child(sourceWindow)
 		sourceWindow.show()
 
 	@misc_utils.log_exception(_moduleLogger)
@@ -176,6 +205,12 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 				self._window.unfullscreen ()
 			else:
 				self._window.fullscreen ()
+			return True
+		elif event.keyval == gtk.keysyms.o and event.get_state() & gtk.gdk.CONTROL_MASK:
+			if self._isPortrait:
+				self.set_orientation(gtk.ORIENTATION_HORIZONTAL)
+			else:
+				self.set_orientation(gtk.ORIENTATION_VERTICAL)
 			return True
 		elif (
 			event.keyval in (gtk.keysyms.w, ) and
@@ -208,6 +243,10 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 		else:
 			_moduleLogger.info("Unfull screen %r to mirror child %r" % (self, source))
 			self._window.unfullscreen()
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_child_rotate(self, source, orientation):
+		self.set_orientation(orientation)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_jump(self, source, node):
@@ -392,7 +431,9 @@ class PresenterWindow(BasicWindow):
 
 		self._presenter = presenter.StreamPresenter(self._store)
 		self._presenter.set_context(
-			self._get_background(),
+			self._get_background(
+				gtk.ORIENTATION_VERTICAL if self._isPortrait else gtk.ORIENTATION_HORIZONTAL
+			),
 			self._node.title,
 			self._node.subtitle,
 		)
@@ -410,7 +451,7 @@ class PresenterWindow(BasicWindow):
 
 		self._window.set_title(self._node.get_parent().title)
 
-	def _get_background(self):
+	def _get_background(self, orientation):
 		raise NotImplementedError()
 
 	def show(self):
@@ -423,6 +464,16 @@ class PresenterWindow(BasicWindow):
 
 	def jump_to(self, node):
 		assert self._node is node
+
+	def set_orientation(self, orientation):
+		didChange = BasicWindow.set_orientation(self, orientation)
+		if didChange:
+			self._presenter.set_orientation(orientation)
+			self._presenter.set_context(
+				self._get_background(orientation),
+				self._node.title,
+				self._node.subtitle,
+			)
 
 	@property
 	def _active(self):

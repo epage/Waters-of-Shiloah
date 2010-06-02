@@ -93,17 +93,7 @@ class MagazinesWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		issuesWindow = MagazineIssuesWindow(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			issuesWindow.window.set_modal(True)
-			issuesWindow.window.set_transient_for(self._window)
-		if self._windowInFullscreen:
-			issuesWindow.window.fullscreen()
-		else:
-			issuesWindow.window.unfullscreen()
-		issuesWindow.connect_auto(issuesWindow, "quit", self._on_quit)
-		issuesWindow.connect_auto(issuesWindow, "home", self._on_home)
-		issuesWindow.connect_auto(issuesWindow, "jump-to", self._on_jump)
-		issuesWindow.connect_auto(issuesWindow, "fullscreen", self._on_child_fullscreen)
+		self._configure_child(issuesWindow)
 		issuesWindow.show()
 		return issuesWindow
 
@@ -188,17 +178,7 @@ class MagazineIssuesWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		issuesWindow = MagazineArticlesWindow(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			issuesWindow.window.set_modal(True)
-			issuesWindow.window.set_transient_for(self._window)
-		if self._windowInFullscreen:
-			issuesWindow.window.fullscreen()
-		else:
-			issuesWindow.window.unfullscreen()
-		issuesWindow.connect_auto(issuesWindow, "quit", self._on_quit)
-		issuesWindow.connect_auto(issuesWindow, "home", self._on_home)
-		issuesWindow.connect_auto(issuesWindow, "jump-to", self._on_jump)
-		issuesWindow.connect_auto(issuesWindow, "fullscreen", self._on_child_fullscreen)
+		self._configure_child(issuesWindow)
 		issuesWindow.show()
 		return issuesWindow
 
@@ -252,17 +232,7 @@ class MagazineArticlesWindow(windows._base.ListWindow):
 
 	def _window_from_node(self, node):
 		issuesWindow = MagazineArticleWindow(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			issuesWindow.window.set_modal(True)
-			issuesWindow.window.set_transient_for(self._window)
-		if self._windowInFullscreen:
-			issuesWindow.window.fullscreen()
-		else:
-			issuesWindow.window.unfullscreen()
-		issuesWindow.connect_auto(issuesWindow, "quit", self._on_quit)
-		issuesWindow.connect_auto(issuesWindow, "home", self._on_home)
-		issuesWindow.connect_auto(issuesWindow, "jump-to", self._on_jump)
-		issuesWindow.connect_auto(issuesWindow, "fullscreen", self._on_child_fullscreen)
+		self._configure_child(issuesWindow)
 		issuesWindow.show()
 		return issuesWindow
 
@@ -275,8 +245,13 @@ class MagazineArticleWindow(windows._base.PresenterWindow):
 	def __init__(self, app, player, store, node):
 		windows._base.PresenterWindow.__init__(self, app, player, store, node)
 
-	def _get_background(self):
-		return self._store.STORE_LOOKUP["magazine_background"]
+	def _get_background(self, orientation):
+		if orientation == gtk.ORIENTATION_VERTICAL:
+			return self._store.STORE_LOOKUP["magazine_background"]
+		elif orientation == gtk.ORIENTATION_HORIZONTAL:
+			return self._store.STORE_LOOKUP["magazine_background_landscape"]
+		else:
+			raise NotImplementedError("Unknown orientation %s" % orientation)
 
 
 gobject.type_register(MagazineArticleWindow)

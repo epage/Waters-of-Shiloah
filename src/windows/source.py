@@ -115,16 +115,13 @@ class SourceSelector(windows._base.BasicWindow):
 		if not hildonize.IS_FREMANTLE_SUPPORTED:
 			sourceWindow.window.set_modal(True)
 			sourceWindow.window.set_transient_for(self._window)
-		sourceWindow.window.set_default_size(*self._window.get_size())
-		if self._windowInFullscreen:
-			sourceWindow.window.fullscreen()
-		else:
-			sourceWindow.window.unfullscreen()
-		sourceWindow.connect("quit", self._on_quit)
-		sourceWindow.connect("jump-to", self._on_jump)
-		sourceWindow.connect("fullscreen", self._on_child_fullscreen)
+		self._configure_child(sourceWindow)
 		sourceWindow.show()
 		return sourceWindow
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_home(self, *args):
+		pass
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_jump(self, source, node):
