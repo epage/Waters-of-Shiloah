@@ -1,0 +1,7 @@
+[Desktop Entry]
+Encoding=UTF-8
+Version=1.0
+Type=Application
+Name=MormonChannel
+Exec=/usr/bin/run-standalone.sh /opt/MormonChannel/bin/MormonChannel.py
+Icon=MormonChannel
