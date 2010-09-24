@@ -18,7 +18,7 @@ Supports streaming:
 * Conference precedings and magazines from The Church of Jesus Christ of Latter-day Saints
 * Scriptures, including King James Version of the Bible and the Book of Mormon
 .
-.This application is not endorsed by The Church of Jesus Christ of Latter-day Saints
+This application is not endorsed by The Church of Jesus Christ of Latter-day Saints
 .
 Homepage: http://watersofshiloah.garage.maemo.org
 """
