@@ -29,13 +29,6 @@ class RadioWindow(windows._base.BasicWindow):
 
 		self._loadingBanner = banners.GenericBanner()
 
-		headerPath = self._store.STORE_LOOKUP["radio_header"]
-		self._header = self._store.get_image_from_store(headerPath)
-		self._headerNavigation = presenter.NavigationBox()
-		self._headerNavigation.toplevel.add(self._header)
-		self.connect_auto(self._headerNavigation, "action", self._on_nav_action)
-		self.connect_auto(self._headerNavigation, "navigating", self._on_navigating)
-
 		self._programmingModel = gtk.ListStore(
 			gobject.TYPE_STRING,
 			gobject.TYPE_STRING,
@@ -78,7 +71,6 @@ class RadioWindow(windows._base.BasicWindow):
 		self.connect_auto(self._presenterNavigation, "navigating", self._on_navigating)
 
 		self._radioLayout = gtk.VBox(False)
-		self._radioLayout.pack_start(self._headerNavigation.toplevel, False, False)
 		self._radioLayout.pack_start(self._treeScroller, True, True)
 		self._radioLayout.pack_start(self._presenterNavigation.toplevel, False, True)
 
@@ -178,7 +170,7 @@ class RadioWindow(windows._base.BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_player_state_change(self, player, newState):
-		if self._headerNavigation.is_active() or self._presenterNavigation.is_active():
+		if self._presenterNavigation.is_active():
 			return
 
 		self._set_context(newState)
