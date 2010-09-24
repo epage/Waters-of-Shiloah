@@ -12,7 +12,7 @@ import constants
 
 
 __appname__ = constants.__app_name__
-__description__ = """Streaming media player for inspirational streaming radio and audiobooks including the KJV Bible
+__description__ = """Media player for inspirational streaming radio and audiobooks including the KJV Bible
 Supports streaming:
 * "Mormon Channel" inspirational radio station
 * Conference precedings and magazines from The Church of Jesus Christ of Latter-day Saints
