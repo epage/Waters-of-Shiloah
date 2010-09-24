@@ -36,10 +36,10 @@ _moduleLogger = logging.getLogger(__name__)
 PROFILE_STARTUP = False
 
 
-class MormonChannelProgram(hildonize.get_app_class()):
+class WatersOfShiloahProgram(hildonize.get_app_class()):
 
 	def __init__(self):
-		super(MormonChannelProgram, self).__init__()
+		super(WatersOfShiloahProgram, self).__init__()
 		currentPath = os.path.abspath(__file__)
 		storePath = os.path.join(os.path.split(os.path.dirname(currentPath))[0], "data")
 		self._store = imagestore.ImageStore(storePath, constants._cache_path_)
@@ -146,7 +146,7 @@ def run():
 	# HACK Playback while silent on Maemo 5
 	hildonize.set_application_name("FMRadio")
 
-	app = MormonChannelProgram()
+	app = WatersOfShiloahProgram()
 	if not PROFILE_STARTUP:
 		try:
 			gtk.main()

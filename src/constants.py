@@ -1,7 +1,7 @@
 import os
 
-__pretty_app_name__ = "Mormon Channel"
-__app_name__ = "mormonchannel"
+__pretty_app_name__ = "Waters of Shiloah"
+__app_name__ = "watersofshiloah"
 __version__ = "1.0.0"
 __build__ = 0
 __app_magic__ = 0x1AFF5

@@ -18,10 +18,10 @@ Supports streaming:
 * Conference precedings and magazines from The Church of Jesus Christ of Latter-day Saints
 * Scriptures, including King James Version of the Bible and the Book of Mormon
 .
-Homepage: http://www.lds.org
+Homepage:
 """
-__author__ = "The Church of Jesus Christ of Latter-day Saints"
-__email__ = "lds-tech@ldschurch.org"
+__author__ = "Ed Page"
+__email__ = "eopage@byu.net"
 __version__ = constants.__version__
 __build__ = constants.__build__
 __changelog__ = """
@@ -96,10 +96,10 @@ def build_package(distribution):
 	p.repository = "extras"
 	p.changelog = __changelog__
 	p.postinstall = __postinstall__
-	p.icon = "48x48-MormonChannel.png"
-	p["/opt/MormonChannel/bin"] = ["MormonChannel.py"]
+	p.icon = "48x48-WatersOfShiloah.png"
+	p["/opt/WatersOfShiloah/bin"] = ["WatersOfShiloah.py"]
 	for relPath, files in unflatten_files(find_files("src", ".")).iteritems():
-		fullPath = "/opt/MormonChannel/lib"
+		fullPath = "/opt/WatersOfShiloah/lib"
 		if relPath:
 			fullPath += os.sep+relPath
 		p[fullPath] = list(
@@ -107,15 +107,15 @@ def build_package(distribution):
 			for (oldName, newName) in files
 		)
 	for relPath, files in unflatten_files(find_files("data", ".")).iteritems():
-		fullPath = "/opt/MormonChannel/share"
+		fullPath = "/opt/WatersOfShiloah/share"
 		if relPath:
 			fullPath += os.sep+relPath
 		p[fullPath] = list(
 			"|".join((oldName, newName))
 			for (oldName, newName) in files
 		)
-	p["/usr/share/applications/hildon"] = ["MormonChannel.desktop"]
-	p["/usr/share/icons/hicolor/48x48/hildon"] = ["48x48-MormonChannel.png|MormonChannel.png"]
+	p["/usr/share/applications/hildon"] = ["WatersOfShiloah.desktop"]
+	p["/usr/share/icons/hicolor/48x48/hildon"] = ["48x48-WatersOfShiloah.png|WatersOfShiloah.png"]
 
 	if distribution == "debian":
 		print p

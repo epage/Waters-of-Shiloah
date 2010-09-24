@@ -1,13 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-"""
-Copyright (C) 2007 Christoph Würstle
-This program is free software; you can redistribute it and/or modify
-it under the terms of the GNU General Public License version 2 as
-published by the Free Software Foundation.
-"""
-
 import os
 import sys
 import logging
@@ -17,7 +10,7 @@ sys.path.append('../lib')
 
 
 import constants
-import mormonchannel_gtk
+import watersofshiloah_gtk
 
 
 if __name__ == "__main__":
@@ -40,4 +33,4 @@ if __name__ == "__main__":
 	_moduleLogger.info("Kernel: %s (%s) for %s" % os.uname()[2:])
 	_moduleLogger.info("Hostname: %s" % os.uname()[1])
 
-	mormonchannel_gtk.run()
+	watersofshiloah_gtk.run()
