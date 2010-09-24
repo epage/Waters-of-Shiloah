@@ -636,7 +636,7 @@ class AboutWindow(BasicWindow):
 
 		self._titleLabel = gtk.Label()
 		self._titleLabel.set_markup("""
-<big><b>Waters of Shiloahl</b></big>
+<big><b>Waters of Shiloah</b></big>
 <i>Maemo Edition</i>
 Version %s
 """ % (constants.__version__, ))
