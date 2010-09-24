@@ -19,7 +19,7 @@ class ImageStore(object):
 	STORE_LOOKUP = {
 		"next": "button_next.png",
 		"prev": "button_prev.png",
-		"home": "home.png",
+		"home": "icon.png",
 		"pause": "button_pause.png",
 		"play": "button_play.png",
 		"stop": "button_stop.png",
@@ -28,7 +28,7 @@ class ImageStore(object):
 		"favorite": "button_favorite.png",
 		"next_pressed": "button_next_pressed.png",
 		"prev_pressed": "button_prev_pressed.png",
-		"home_pressed": "home_pressed.png",
+		"home_pressed": "icon.png",
 		"pause_pressed": "button_pause_pressed.png",
 		"play_pressed": "button_play_pressed.png",
 		"stop_pressed": "button_stop_pressed.png",
