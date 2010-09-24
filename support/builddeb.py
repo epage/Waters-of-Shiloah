@@ -12,13 +12,15 @@ import constants
 
 
 __appname__ = constants.__app_name__
-__description__ = """Player for inspirational streaming radio and audiobooks including the KJV Bible
+__description__ = """Streaming media player for inspirational streaming radio and audiobooks including the KJV Bible
 Supports streaming:
 * "Mormon Channel" inspirational radio station
 * Conference precedings and magazines from The Church of Jesus Christ of Latter-day Saints
 * Scriptures, including King James Version of the Bible and the Book of Mormon
 .
-Homepage:
+.This application is not endorsed by The Church of Jesus Christ of Latter-day Saints
+.
+Homepage: http://watersofshiloah.garage.maemo.org
 """
 __author__ = "Ed Page"
 __email__ = "eopage@byu.net"
@@ -79,9 +81,9 @@ def build_package(distribution):
 	])
 	maemoSpecificDepends = ", python-osso | python2.5-osso, python-hildon | python2.5-hildon"
 	p.depends += {
-		"debian": ", python-glade2",
-		"diablo": maemoSpecificDepends + "",
-		"fremantle": maemoSpecificDepends + ", python-glade2",
+		"debian": "",
+		"diablo": maemoSpecificDepends,
+		"fremantle": maemoSpecificDepends,
 	}[distribution]
 	p.recommends = ", ".join([
 	])

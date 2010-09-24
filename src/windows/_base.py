@@ -636,7 +636,7 @@ class AboutWindow(BasicWindow):
 
 		self._titleLabel = gtk.Label()
 		self._titleLabel.set_markup("""
-<big><b>Mormon Channel</b></big>
+<big><b>Waters of Shiloahl</b></big>
 <i>Maemo Edition</i>
 Version %s
 """ % (constants.__version__, ))
@@ -644,19 +644,30 @@ Version %s
 
 		self._copyLabel = gtk.Label()
 		self._copyLabel.set_markup("""
-<small>(c) 2010 Intellectual Reserve, Inc.
-All rights reserved.</small>
+<small>Developed by: Ed Page
+Images by: Various Sources, See COPYING for author and license information (mix of various CC licenses, commercial, and non-commercial
+This application nor various images are not endorsed by The Church of Jesus Christ of Latter-day Saints</small>
 """)
 		self._copyLabel.set_property("justify", gtk.JUSTIFY_CENTER)
 
-		self._linkButton = gtk.LinkButton("http://www.lds.org")
-		self._linkButton.set_label("LDS.org")
+		self._linkButton = gtk.LinkButton("http://watersofshiloah.garage.maemo.org")
+		self._linkButton.set_label("Waters of Shiloah")
 		self._linkButton.connect("clicked", self._on_website)
+
+		self._radioLinkButton = gtk.LinkButton("http://radio.lds.org")
+		self._radioLinkButton.set_label("Mormon Channel")
+		self._radioLinkButton.connect("clicked", self._on_website)
+
+		self._ldsLinkButton = gtk.LinkButton("http://www.lds.org")
+		self._ldsLinkButton.set_label("LDS.org")
+		self._ldsLinkButton.connect("clicked", self._on_website)
 
 		self._spacedLayout = gtk.VBox(True)
 		self._spacedLayout.pack_start(self._titleLabel, False, False)
 		self._spacedLayout.pack_start(self._copyLabel, False, False)
 		self._spacedLayout.pack_start(self._linkButton, False, False)
+		self._spacedLayout.pack_start(self._radioLinkButton, False, False)
+		self._spacedLayout.pack_start(self._ldsLinkButton, False, False)
 
 		self._separator = gtk.HSeparator()
 		self._presenter = presenter.NavControl(self._player, self._store)
