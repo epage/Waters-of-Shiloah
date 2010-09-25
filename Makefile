@@ -63,9 +63,9 @@ package: $(OBJ)
 	cd $(BUILD_PATH)/debian ; python builddeb.py debian
 
 upload:
-	dput fremantle-extras-builder $(BUILD_PATH)/fremantle/$(PROJECT_NAME)*.changes
-	dput diablo-extras-builder $(BUILD_PATH)/diablo/$(PROJECT_NAME)*.changes
-	cp $(BUILD_PATH)/debian/*.deb ./www/$(PROJECT_NAME).deb
+	dput fremantle-extras-builder $(BUILD_PATH)/fremantle/watersofshiloah*.changes
+	dput diablo-extras-builder $(BUILD_PATH)/diablo/watersofshiloah*.changes
+	cp $(BUILD_PATH)/debian/*.deb ./www/watersofshiloah.deb
 
 lint: $(OBJ)
 	$(foreach file, $(SOURCE), $(LINT) $(file) ; )
