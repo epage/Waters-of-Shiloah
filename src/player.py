@@ -3,7 +3,11 @@ import logging
 import gobject
 
 import util.misc as misc_utils
-import stream
+try:
+	import stream as _stream
+	stream = _stream # Silence PyFlakes
+except ImportError:
+	import stream_gst as stream
 import stream_index
 import call_monitor
 

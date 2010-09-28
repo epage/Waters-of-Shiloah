@@ -11,6 +11,8 @@ _moduleLogger = logging.getLogger(__name__)
 
 class GSTStream(gobject.GObject):
 
+	# @bug Advertising state changes a bit early, should watch for GStreamer state change
+
 	STATE_PLAY = "play"
 	STATE_PAUSE = "pause"
 	STATE_STOP = "stop"
@@ -37,7 +39,6 @@ class GSTStream(gobject.GObject):
 	def __init__(self):
 		gobject.GObject.__init__(self)
 		#Fields
-		self._state = self.STATE_STOP
 		self._uri = ""
 		self._elapsed = 0
 		self._duration = 0
@@ -66,7 +67,7 @@ class GSTStream(gobject.GObject):
 		return self._translate_state(state)
 
 	def set_file(self, uri):
-		if self._uri != file:
+		if self._uri != uri:
 			self._invalidate_cache()
 		if self.state != self.STATE_STOP:
 			self.stop()
