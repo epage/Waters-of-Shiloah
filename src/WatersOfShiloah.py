@@ -6,7 +6,7 @@ import sys
 import logging
 
 _moduleLogger = logging.getLogger(__name__)
-sys.path.append('../lib')
+sys.path.append('/opt/WatersOfShiloah/lib')
 
 
 import constants
