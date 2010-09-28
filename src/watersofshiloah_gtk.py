@@ -18,7 +18,8 @@ import dbus.mainloop.glib
 import gtk
 
 try:
-	import osso
+	import osso as _osso
+	osso = _osso
 except ImportError:
 	osso = None
 
@@ -41,7 +42,10 @@ class WatersOfShiloahProgram(hildonize.get_app_class()):
 	def __init__(self):
 		super(WatersOfShiloahProgram, self).__init__()
 		currentPath = os.path.abspath(__file__)
-		storePath = os.path.join(os.path.split(os.path.dirname(currentPath))[0], "data")
+		for dirName in ["share", "data"]:
+			storePath = os.path.join(os.path.split(os.path.dirname(currentPath))[0], dirName)
+			if os.path.isdir(storePath):
+				break
 		self._store = imagestore.ImageStore(storePath, constants._cache_path_)
 		self._index = stream_index.AudioIndex()
 		self._player = player.Player(self._index)
