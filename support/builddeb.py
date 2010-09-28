@@ -27,7 +27,9 @@ __email__ = "eopage@byu.net"
 __version__ = constants.__version__
 __build__ = constants.__build__
 __changelog__ = """
-Initial release
+* Cut down on size of media
+* Attempting to get Maemo 4.1 working
+* Fixing a couple of issues for launching on Maemo 5
 """
 
 
@@ -80,13 +82,13 @@ def build_package(distribution):
 		"python-gtk2 | python2.5-gtk2",
 		"python-xml | python2.5-xml",
 		"python-dbus | python2.5-dbus",
-		"python-gst0.10 | python2.5-gst0.10",
+		"python-telepathy | python2.5-telepathy",
 	])
 	maemoSpecificDepends = ", python-osso | python2.5-osso, python-hildon | python2.5-hildon"
 	p.depends += {
-		"debian": "",
+		"debian": ", python-gst0.10",
 		"diablo": maemoSpecificDepends,
-		"fremantle": maemoSpecificDepends,
+		"fremantle": maemoSpecificDepends + ", python-gst0.10",
 	}[distribution]
 	p.recommends = ", ".join([
 	])
@@ -107,10 +109,17 @@ def build_package(distribution):
 		fullPath = "/opt/WatersOfShiloah/lib"
 		if relPath:
 			fullPath += os.sep+relPath
-		p[fullPath] = list(
+		fileLocationTransforms = list(
 			"|".join((oldName, newName))
 			for (oldName, newName) in files
 		)
+		if not relPath:
+			fileLocationTransforms.append({
+				"debian": "src-stream_gst.py|stream.py",
+				"diablo": "src-stream_osso.py|stream.py",
+				"fremantle": "src-stream_gst.py|stream.py",
+			}[distribution])
+		p[fullPath] = fileLocationTransforms
 	for relPath, files in unflatten_files(find_files("data", ".")).iteritems():
 		fullPath = "/opt/WatersOfShiloah/share"
 		if relPath:
