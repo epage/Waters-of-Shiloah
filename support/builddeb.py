@@ -34,6 +34,10 @@ Initial release
 __postinstall__ = """#!/bin/sh -e
 
 gtk-update-icon-cache -f /usr/share/icons/hicolor
+rm -f ~/.%(name)s/%(name)s.log
+""" % {"name": constants.__app_name__}
+
+__preremove__ = """#!/bin/sh -e
 """
 
 
@@ -68,7 +72,6 @@ def build_package(distribution):
 	p.prettyName = constants.__pretty_app_name__
 	p.description = __description__
 	p.bugTracker = "https://bugs.maemo.org/enter_bug.cgi?product=Waters%%20of%%20Shiloah"
-	p.upgradeDescription = __changelog__.split("\n\n", 1)[0]
 	p.author = __author__
 	p.mail = __email__
 	p.license = "lgpl"
