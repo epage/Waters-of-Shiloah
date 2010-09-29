@@ -9,7 +9,7 @@ import util.misc as misc_utils
 _moduleLogger = logging.getLogger(__name__)
 
 
-class GSTStream(gobject.GObject):
+class Stream(gobject.GObject):
 
 	# @bug Advertising state changes a bit early, should watch for GStreamer state change
 
@@ -143,4 +143,4 @@ class GSTStream(gobject.GObject):
 			self.emit("error", err, debug)
 
 
-gobject.type_register(GSTStream)
+gobject.type_register(Stream)

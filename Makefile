@@ -3,7 +3,7 @@ SOURCE_PATH=src
 SOURCE=$(shell find $(SOURCE_PATH) -iname "*.py")
 PROGRAM=$(SOURCE_PATH)/watersofshiloah_gtk.py
 DATA_PATH=data
-DATA_TYPES=*.ini *.map *.glade *.png
+DATA_TYPES=*.ini *.map *.glade *.png *.gif
 DATA=$(foreach type, $(DATA_TYPES), $(shell find $(DATA_PATH) -iname "$(type)")) data/COPYING
 OBJ=$(SOURCE:.py=.pyc)
 BUILD_PATH=./build

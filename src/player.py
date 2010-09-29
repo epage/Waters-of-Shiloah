@@ -35,9 +35,9 @@ class Player(gobject.GObject):
 		),
 	}
 
-	STATE_PLAY = stream.GSTStream.STATE_PLAY
-	STATE_PAUSE = stream.GSTStream.STATE_PAUSE
-	STATE_STOP = stream.GSTStream.STATE_STOP
+	STATE_PLAY = stream.Stream.STATE_PLAY
+	STATE_PAUSE = stream.Stream.STATE_PAUSE
+	STATE_STOP = stream.Stream.STATE_STOP
 
 	def __init__(self, index):
 		gobject.GObject.__init__(self)
@@ -48,7 +48,7 @@ class Player(gobject.GObject):
 		self._calls = call_monitor.CallMonitor()
 		self._calls.connect("call_start", self._on_call_start)
 
-		self._stream = stream.GSTStream()
+		self._stream = stream.Stream()
 		self._stream.connect("state-change", self._on_stream_state)
 		self._stream.connect("eof", self._on_stream_eof)
 		self._stream.connect("error", self._on_stream_error)

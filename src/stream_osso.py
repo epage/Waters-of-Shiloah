@@ -9,7 +9,7 @@ import util.misc as misc_utils
 _moduleLogger = logging.getLogger(__name__)
 
 
-class SimplePlayer(gobject.GObject):
+class Stream(gobject.GObject):
 
 	STATE_PLAY = "play"
 	STATE_PAUSE = "pause"
@@ -44,9 +44,6 @@ class SimplePlayer(gobject.GObject):
 		self._uri = ""
 		self._elapsed = 0
 		self._duration = 0
-
-		#Event callbacks
-		self.on_playing_done = on_playing_done
 
 		session_bus = dbus.SessionBus()
 
@@ -169,4 +166,4 @@ class SimplePlayer(gobject.GObject):
 		_moduleLogger.info("State: %s", state)
 
 
-gobject.type_register(GSTStream)
+gobject.type_register(Stream)

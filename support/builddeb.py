@@ -27,9 +27,8 @@ __email__ = "eopage@byu.net"
 __version__ = constants.__version__
 __build__ = constants.__build__
 __changelog__ = """
-* Cut down on size of media
-* Attempting to get Maemo 4.1 working
-* Fixing a couple of issues for launching on Maemo 5
+* Another Diablo fix
+* Fixing a missing graphic
 """
 
 
