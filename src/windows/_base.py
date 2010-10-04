@@ -58,7 +58,7 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 	def __init__(self, app, player, store):
 		gobject.GObject.__init__(self)
 		self._isDestroyed = False
-		self._isPortrait = True
+		self._isPortrait = hildonize.IS_FREMANTLE_SUPPORTED
 
 		self._app = app
 		self._player = player
@@ -103,6 +103,10 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 			appMenu.append(aboutMenuItem)
 			appMenu.show_all()
 			self._window.set_app_menu(appMenu)
+		menuBar = hildonize.hildonize_menu(
+			self._window,
+			menuBar,
+		)
 
 		self._layout.pack_start(self._errorBanner.toplevel, False, True)
 
