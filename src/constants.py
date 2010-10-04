@@ -2,7 +2,7 @@ import os
 
 __pretty_app_name__ = "Waters of Shiloah"
 __app_name__ = "watersofshiloah"
-__version__ = "1.0.2"
+__version__ = "1.0.3"
 __build__ = 0
 __app_magic__ = 0x1AFF5
 _data_path_ = os.path.join(os.path.expanduser("~"), ".%s" % __app_name__)
