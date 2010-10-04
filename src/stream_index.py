@@ -105,7 +105,7 @@ class AudioIndex(object):
 		assert self._languagesRequest is not None
 		r = self._languagesRequest
 		self._languagesRequest = None
-		r[1](self._languages)
+		r[1](e)
 
 
 class Node(object):

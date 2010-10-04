@@ -22,6 +22,7 @@ class SourceSelector(windows._base.BasicWindow):
 		windows._base.BasicWindow.__init__(self, app, player, store)
 		self._languages = []
 		self._index = index
+		self._selectedNode = ""
 
 		self._loadingBanner = banners.GenericBanner()
 
@@ -96,11 +97,15 @@ class SourceSelector(windows._base.BasicWindow):
 	def _on_languages(self, languages):
 		self._hide_loading()
 		self._languages = list(languages)
+		if self._selectedNode:
+			self._show_window_by_node_name(self._selectedNode)
+			self._selectedNode = ""
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_error(self, exception):
 		self._hide_loading()
-		self._errorBanner.push_message(str(exception))
+		_moduleLogger.info(exception)
+		self._errorBanner.push_message("Error loading information")
 
 	def _window_from_node(self, node):
 		if node.id == stream_index.SOURCE_RADIO:
@@ -119,6 +124,10 @@ class SourceSelector(windows._base.BasicWindow):
 		sourceWindow.show()
 		return sourceWindow
 
+	def _show_window_by_node_name(self, nodeName):
+		node = self._index.get_source(nodeName, self._languages[0]["id"])
+		self._window_from_node(node)
+
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_home(self, *args):
 		pass
@@ -132,8 +141,11 @@ class SourceSelector(windows._base.BasicWindow):
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_source_selected(self, widget, nodeName):
-		node = self._index.get_source(nodeName, self._languages[0]["id"])
-		self._window_from_node(node)
+		if self._languages:
+			self._show_window_by_node_name(nodeName)
+		else:
+			self._selectedNode = nodeName
+			self._refresh()
 
 
 gobject.type_register(SourceSelector)
