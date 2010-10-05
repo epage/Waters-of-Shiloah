@@ -95,6 +95,10 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 			menuBar.append(helpMenuItem)
 
 			self._layout.pack_start(menuBar, False, False)
+			menuBar = hildonize.hildonize_menu(
+				self._window,
+				menuBar,
+			)
 		else:
 			aboutMenuItem = gtk.Button("About")
 			aboutMenuItem.connect("clicked", self._on_about)
@@ -103,10 +107,6 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 			appMenu.append(aboutMenuItem)
 			appMenu.show_all()
 			self._window.set_app_menu(appMenu)
-		menuBar = hildonize.hildonize_menu(
-			self._window,
-			menuBar,
-		)
 
 		self._layout.pack_start(self._errorBanner.toplevel, False, True)
 
