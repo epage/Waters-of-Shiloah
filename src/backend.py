@@ -116,9 +116,24 @@ class Backend(object):
 		items = tree.find("chapters")
 		return self._process_list(items, ["title", "url"])
 
+	CONFERENCE_SEARCH = 1
+	MAGAZINE_SEARCH = 2
+	VIDEO_SEARCH = 8
+	SEARCH_ALL = 11
+
+	def search(self, langId, phrase, content):
+		tree = self._get_page_with_validation(
+			action="lds.search",
+			languageID=langId,
+			phrase=phrase,
+			content=content,
+		)
+		return tree
+
 	def _get_page_with_validation(self, **params):
 		encodedParams = urllib.urlencode(params)
-		page = self._browser.download("http://tech.lds.org/radio?%s" % encodedParams)
+		url = "http://tech.lds.org/radio?%s" % encodedParams
+		page = self._browser.download(url)
 		if not page:
 			raise RuntimeError("Blank page")
 		tree = ElementTree.fromstring(page)
