@@ -117,9 +117,6 @@ class SourceSelector(windows._base.BasicWindow):
 		elif node.id == stream_index.SOURCE_SCRIPTURES:
 			Source = windows.scriptures.ScripturesWindow
 		sourceWindow = Source(self._app, self._player, self._store, node)
-		if not hildonize.IS_FREMANTLE_SUPPORTED:
-			sourceWindow.window.set_modal(True)
-			sourceWindow.window.set_transient_for(self._window)
 		self._configure_child(sourceWindow)
 		sourceWindow.show()
 		return sourceWindow
