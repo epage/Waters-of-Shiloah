@@ -27,8 +27,7 @@ __email__ = "eopage@byu.net"
 __version__ = constants.__version__
 __build__ = constants.__build__
 __changelog__ = """
-* Fixing some orientation bugs
-* Making log file rotate due to long release cycles
+* Fixing Maemo 4.1
 """
 
 
