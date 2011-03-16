@@ -288,7 +288,7 @@ def _hildon_window_to_portrait(window):
 
 def _hildon_window_to_landscape(window):
 	# gtk documentation is unclear whether this does a "=" or a "&= ~"
-	flags = hildon.PORTRAIT_MODE_SUPPORT
+	flags = 0
 	hildon.hildon_gtk_window_set_portrait_flags(window, flags)
 
 

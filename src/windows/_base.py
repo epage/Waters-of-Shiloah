@@ -115,7 +115,10 @@ class BasicWindow(gobject.GObject, go_utils.AutoSignal):
 		return self._window
 
 	def show(self):
-		hildonize.window_to_portrait(self._window)
+		if self._isPortrait:
+			hildonize.window_to_portrait(self._window)
+		else:
+			hildonize.window_to_landscape(self._window)
 		self._window.show_all()
 
 	def save_settings(self, config, sectionName):
@@ -478,6 +481,7 @@ class PresenterWindow(BasicWindow):
 				self._node.title,
 				self._node.subtitle,
 			)
+		return didChange
 
 	@property
 	def _active(self):
