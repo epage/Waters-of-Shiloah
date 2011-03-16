@@ -550,6 +550,7 @@ class PresenterWindow(BasicWindow):
 	def _on_player_error(self, player, err, debug):
 		assert not self._isDestroyed
 		_moduleLogger.error("%r - %r" % (err, debug))
+		self._errorBanner.push_message(err)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_navigating(self, widget, navState):

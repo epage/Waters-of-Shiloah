@@ -69,6 +69,7 @@ class RadioWindow(windows._base.BasicWindow):
 		self._presenterNavigation.toplevel.add(self._presenter.toplevel)
 		self.connect_auto(self._presenterNavigation, "action", self._on_nav_action)
 		self.connect_auto(self._presenterNavigation, "navigating", self._on_navigating)
+		self.connect_auto(self._player, "error", self._on_player_error)
 
 		self._radioLayout = gtk.VBox(False)
 		self._radioLayout.pack_start(self._treeScroller, True, True)
@@ -153,6 +154,12 @@ class RadioWindow(windows._base.BasicWindow):
 					return i - 1
 		else:
 			return i
+
+	@misc_utils.log_exception(_moduleLogger)
+	def _on_player_error(self, player, err, debug):
+		assert not self._isDestroyed
+		_moduleLogger.error("%r - %r" % (err, debug))
+		self._errorBanner.push_message(err)
 
 	@misc_utils.log_exception(_moduleLogger)
 	def _on_continual_update(self, *args):

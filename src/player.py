@@ -4,10 +4,15 @@ import gobject
 
 import util.misc as misc_utils
 try:
-	import stream as _stream
-	stream = _stream # Silence PyFlakes
+	import stream_gst
+	stream = stream_gst
 except ImportError:
-	import stream_gst as stream
+	try:
+		import stream_osso
+		stream = stream_osso
+	except ImportError:
+		import stream_null
+		stream = stream_null
 import stream_index
 import call_monitor
 

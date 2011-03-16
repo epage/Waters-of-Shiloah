@@ -35,7 +35,6 @@ class Stream(gobject.GObject):
 		),
 	}
 
-
 	def __init__(self):
 		gobject.GObject.__init__(self)
 		#Fields
